@@ -1,7 +1,11 @@
-import "./style.css";
+import { Canvas } from "@react-three/fiber";
+import "./App.css";
+import Floor from "./components/floor";
 
 const App = () => {
-  return <div>App</div>;
+  return <Canvas>
+    <Floor />
+  </Canvas>;
 };
 
 export default App;

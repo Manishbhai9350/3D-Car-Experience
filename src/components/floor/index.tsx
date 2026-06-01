@@ -85,7 +85,7 @@ const Floor = () => {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
-        <planeGeometry args={[10, 10]} />
+        <planeGeometry args={[20, 20]} />
         <MeshReflectorMaterial
           envMapIntensity={envMapIntensity}
           normalMap={normalMap}

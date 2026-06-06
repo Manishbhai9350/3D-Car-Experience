@@ -7,7 +7,7 @@ uniform float uTime;
 uniform float uNoiseScale;
 uniform float uNoiseStrength;
 
-#include ../includes/SimplexNoise.glsl
+#include ../../../includes/SimplexNoise.glsl
 
 void main() {
     float ln = length(vPosition.xy) / uMaxY;

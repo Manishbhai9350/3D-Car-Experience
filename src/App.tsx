@@ -10,8 +10,12 @@ import {
 import Lights from "./components/lights";
 import Car3D from "./components/car";
 import { Leva } from "leva";
+import { BackSide, DoubleSide } from "three";
+import Tunnel from "./components/tunnel";
 
 const App = () => {
+
+
   return (
     <main>
       <Leva />
@@ -20,17 +24,8 @@ const App = () => {
         <OrbitControls target={[0, 0.35, 0]} makeDefault />
         <Floor />
         <Lights />
-        <Car3D />
-        <Environment>
-          {/* <Lightformer
-            form="rect" // circle | ring | rect (optional, default = rect)
-            intensity={100} // power level (optional = 1)
-            scale={[.5,.5]}
-            color="skyblue" // (optional = white)
-            target={[0, 0, 0]} // Target position (optional = undefined)
-            position={[1,0,0]}
-          /> */}
-        </Environment>
+        {/* <Car3D /> */}
+        <Tunnel />
       </Canvas>
     </main>
   );

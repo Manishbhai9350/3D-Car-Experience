@@ -1,8 +1,8 @@
 import { Color, MeshPhysicalMaterial, Vector2 } from "three";
-import CustomShaderMaterial from "three-custom-shader-material";
 import CSM from "three-custom-shader-material/vanilla";
 import bodyVertex from "../shaders/bodyshader/vertex.glsl";
 import inkFragment1 from "../shaders/bodyshader/ink_transition_1.glsl";
+import CustomShaderMaterial from "three-custom-shader-material";
 import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import gsap from "gsap";

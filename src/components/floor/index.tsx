@@ -31,8 +31,8 @@ const Floor = () => {
     roughness,
     metalness,
     envMapIntensity,
-    normalScaleX,
-    normalScaleY,
+    // normalScaleX,
+    // normalScaleY,
     dithering,
     blurX,
     blurY,
@@ -50,9 +50,9 @@ const Floor = () => {
     "MeshReflectorMaterial",
     {
       Surface: folder({
-        color: "#000000",
-        roughness: { value: 0.65, min: 0, max: 1, step: 0.01 },
-        metalness: { value: 0.1, min: 0, max: 1, step: 0.01 },
+        color: "#090909",
+        roughness: { value: 0.82, min: 0, max: 1, step: 0.01 },
+        metalness: { value: 0, min: 0, max: 1, step: 0.01 },
         envMapIntensity: { value: 0, min: 0, max: 5, step: 0.01 },
         dithering: true,
       }),
@@ -67,11 +67,11 @@ const Floor = () => {
         depthToBlurRatioBias: { value: 0.25, min: 0, max: 1, step: 0.01 },
       }),
       Reflection: folder({
-        mixStrength: { value: 80, min: 0, max: 200, step: 1 },
+        mixStrength: { value: 56, min: 0, max: 200, step: 1 },
         mixContrast: { value: 1, min: 0, max: 5, step: 0.01 },
-        resolution: { value: 256, options: [256, 512, 1024, 2048] },
-        mirror: { value: 0, min: 0, max: 1, step: 0.01 },
-        reflectorOffset: { value: 0.2, min: -1, max: 1, step: 0.01 },
+        resolution: { value: 512, options: [256, 512, 1024, 2048] },
+        mirror: { value: .93, min: 0, max: 1, step: 0.01 },
+        reflectorOffset: { value: 0, min: -1, max: 1, step: 0.01 },
       }),
       Depth: folder({
         depthScale: { value: 0.01, min: 0, max: 1, step: 0.001 },
@@ -85,12 +85,12 @@ const Floor = () => {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
-        <planeGeometry args={[20, 20]} />
+        <planeGeometry args={[50, 50]} />
         <MeshReflectorMaterial
           envMapIntensity={envMapIntensity}
-          normalMap={normalMap}
-          normalScale={[normalScaleX, normalScaleY]}
-          roughnessMap={roughnessMap}
+          // normalMap={normalMap}
+          // normalScale={[normalScaleX, normalScaleY]}
+          // roughnessMap={roughnessMap}
           dithering={dithering}
           color={color}
           roughness={roughness}

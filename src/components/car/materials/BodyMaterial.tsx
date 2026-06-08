@@ -6,21 +6,24 @@ import CustomShaderMaterial from "three-custom-shader-material";
 import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import gsap from "gsap";
+import { createColorSet } from "../../../utils";
 
 // ─── 10 vivid ping-pong colors ───────────────────────────────────────────────
-const COLORS = [
-  "#ff2d55", // hot pink
-  "#ff9f0a", // amber
-  "#46ff1c", // electric green
-  "#0af5ff", // cyan
-  "#bf5af2", // purple
-  "#ff6b35", // orange
-  "#00ff88", // mint
-  "#ff375f", // red
-  "#ffd60a", // yellow
-  "#30d5c8", // turquoise
-  "#ff2d95", // magenta
+const RAW_COLORS = [
+  "#ff2d55",
+  "#ff9f0a",
+  "#46ff1c",
+  "#0af5ff",
+  "#bf5af2",
+  "#ff6b35",
+  "#00ff88",
+  "#ff375f",
+  "#ffd60a",
+  "#30d5c8",
+  "#ff2d95",
 ];
+
+const COLORS = RAW_COLORS.map(createColorSet);
 
 interface BodyMaterialProps {
   minY: number;
@@ -39,12 +42,6 @@ const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
   // The proxy object GSAP actually animates
   const progressProxy = useRef({ value: 0 });
 
-  // ── Kick off the first transition on mount ──────────────────────────────
-  useEffect(() => {
-    playNextTransition();
-    return () => { tweenRef.current?.kill(); };
-  }, []);
-
   function playNextTransition() {
     const nextIndex = (colorIndexRef.current + 1) % COLORS.length;
 
@@ -52,10 +49,10 @@ const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
 
     // Swap colors: prevColor = whatever is currently showing
     //              newColor  = next in the sequence
-    CSMRef.current.uniforms.prevColor.value = new Color(
-      COLORS[colorIndexRef.current]
-    );
-    CSMRef.current.uniforms.newColor.value = new Color(COLORS[nextIndex]);
+    CSMRef.current.uniforms.prevColor.value =
+      COLORS[colorIndexRef.current].body;
+
+    CSMRef.current.uniforms.newColor.value = COLORS[nextIndex].body;
 
     // Reset progress to 0 before animating
     progressProxy.current.value = 0;
@@ -79,6 +76,14 @@ const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
     });
   }
 
+  // ── Kick off the first transition on mount ──────────────────────────────
+  useEffect(() => {
+    playNextTransition();
+    return () => {
+      tweenRef.current?.kill();
+    };
+  }, []);
+
   useFrame(({ clock }) => {
     if (!CSMRef.current) return;
     CSMRef.current.uniforms.uTime.value = clock.getElapsedTime();
@@ -94,14 +99,14 @@ const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
       vertexShader={bodyVertex}
       fragmentShader={inkFragment1}
       uniforms={{
-        uMinY:        { value: minY },
-        uMaxY:        { value: maxY },
-        uProgress:    { value: 0 },
-        uTime:        { value: 0.0 },
+        uMinY: { value: minY },
+        uMaxY: { value: maxY },
+        uProgress: { value: 0 },
+        uTime: { value: 0.0 },
         // Start with first two colors pre-loaded
-        prevColor:    { value: new Color(COLORS[0]) },
-        newColor:     { value: new Color(COLORS[1]) },
-        uResolution:  { value: new Vector2(innerWidth, innerHeight) },
+        prevColor: { value: new Color(COLORS[0].body) },
+        newColor: { value: new Color(COLORS[1].body) },
+        uResolution: { value: new Vector2(innerWidth, innerHeight) },
       }}
     />
   );

@@ -8,6 +8,8 @@ import { useEffect, useRef, useState, type JSX } from "react";
 import { useGLTF } from "@react-three/drei";
 import type { GLTF } from "three-stdlib";
 import BodyMaterial from "./materials/BodyMaterial";
+import { useCar } from "../../context/car/car.hook";
+import { COLORS } from "../../data.";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -129,6 +131,8 @@ export function Car(props: JSX.IntrinsicElements["group"]) {
   const groupRef = useRef<THREE.Group>(null);
   const [bounds, setBounds] = useState({ min: 0, max: 1 });
 
+  const { setCurrentColorIndex, isAnimatingRef } = useCar();
+
   useEffect(() => {
     if (!groupRef.current) return;
     const box = new THREE.Box3().setFromObject(groupRef.current);
@@ -162,6 +166,11 @@ export function Car(props: JSX.IntrinsicElements["group"]) {
           geometry={nodes.body.geometry}
           position={[0, -0.002, 0.614]}
           scale={2.371}
+          onClick={() => {
+            if (!isAnimatingRef?.current) {
+              setCurrentColorIndex((p) => (p + 1) % COLORS.length);
+            }
+          }}
         >
           <BodyMaterial minY={bounds.min} maxY={bounds.max} />
         </mesh>

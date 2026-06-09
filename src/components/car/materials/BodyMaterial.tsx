@@ -6,24 +6,7 @@ import CustomShaderMaterial from "three-custom-shader-material";
 import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import gsap from "gsap";
-import { createColorSet } from "../../../utils";
-
-// ─── 10 vivid ping-pong colors ───────────────────────────────────────────────
-const RAW_COLORS = [
-  "#ff2d55",
-  "#ff9f0a",
-  "#46ff1c",
-  "#0af5ff",
-  "#bf5af2",
-  "#ff6b35",
-  "#00ff88",
-  "#ff375f",
-  "#ffd60a",
-  "#30d5c8",
-  "#ff2d95",
-];
-
-const COLORS = RAW_COLORS.map(createColorSet);
+import { useCar } from "../../../context/car/car.hook";
 
 interface BodyMaterialProps {
   minY: number;
@@ -32,57 +15,57 @@ interface BodyMaterialProps {
 
 const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
   const CSMRef = useRef<CSM<typeof MeshPhysicalMaterial>>(null!);
+  const { colors, currentColorIndex, isAnimatingRef } = useCar();
 
-  // Track which color index we're currently ON (fully revealed)
-  const colorIndexRef = useRef(0);
-
-  // Stable GSAP tween ref so we can kill it on unmount
+  // Track the previous index so we know what to animate FROM
+  const prevColorIndexRef = useRef(currentColorIndex);
   const tweenRef = useRef<gsap.core.Tween | null>(null);
-
-  // The proxy object GSAP actually animates
   const progressProxy = useRef({ value: 0 });
 
-  function playNextTransition() {
-    const nextIndex = (colorIndexRef.current + 1) % COLORS.length;
+  // Simple guard ref — no re-renders, no effect retriggering
 
-    if (!CSMRef.current) return;
+  useEffect(() => {
+    if (!CSMRef.current || !isAnimatingRef) return;
 
-    // Swap colors: prevColor = whatever is currently showing
-    //              newColor  = next in the sequence
-    CSMRef.current.uniforms.prevColor.value =
-      COLORS[colorIndexRef.current].body;
+    const prevIndex = prevColorIndexRef.current;
+    const nextIndex = currentColorIndex;
 
-    CSMRef.current.uniforms.newColor.value = COLORS[nextIndex].body;
+    if (prevIndex === nextIndex) return;
 
-    // Reset progress to 0 before animating
+    // 🚫 Bail if already animating
+    if (isAnimatingRef.current) return;
+
+    isAnimatingRef.current = true;
+
+    CSMRef.current.uniforms.prevColor.value = new Color(colors[prevIndex].body);
+    CSMRef.current.uniforms.newColor.value = new Color(colors[nextIndex].body);
+
     progressProxy.current.value = 0;
     CSMRef.current.uniforms.uProgress.value = 0;
 
-    // Animate progress 0 → 1, then on complete: ping-pong to next color
+    tweenRef.current?.kill();
     tweenRef.current = gsap.to(progressProxy.current, {
       value: 1,
-      duration: 4,
+      duration: 2,
       ease: "power2.inOut",
       onUpdate: () => {
         if (!CSMRef.current) return;
         CSMRef.current.uniforms.uProgress.value = progressProxy.current.value;
       },
       onComplete: () => {
-        // Advance the index — newColor is now the "current" color
-        colorIndexRef.current = nextIndex;
-        // Brief pause then play the next one
-        gsap.delayedCall(0.3, playNextTransition);
+        prevColorIndexRef.current = nextIndex;
+        isAnimatingRef.current = false;
       },
     });
-  }
+  }, [currentColorIndex, colors, isAnimatingRef]);
 
-  // ── Kick off the first transition on mount ──────────────────────────────
-  useEffect(() => {
-    playNextTransition();
-    return () => {
+  // Cleanup on unmount
+  useEffect(
+    () => () => {
       tweenRef.current?.kill();
-    };
-  }, []);
+    },
+    [],
+  );
 
   useFrame(({ clock }) => {
     if (!CSMRef.current) return;
@@ -103,9 +86,8 @@ const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
         uMaxY: { value: maxY },
         uProgress: { value: 0 },
         uTime: { value: 0.0 },
-        // Start with first two colors pre-loaded
-        prevColor: { value: new Color(COLORS[0].body) },
-        newColor: { value: new Color(COLORS[1].body) },
+        prevColor: { value: new Color(colors[currentColorIndex].body) },
+        newColor: { value: new Color(colors[currentColorIndex].body) },
         uResolution: { value: new Vector2(innerWidth, innerHeight) },
       }}
     />

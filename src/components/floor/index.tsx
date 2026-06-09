@@ -51,7 +51,7 @@ const Floor = () => {
     {
       Surface: folder({
         color: "#090909",
-        roughness: { value: 0.82, min: 0, max: 1, step: 0.01 },
+        roughness: { value: 0.04, min: 0, max: 1, step: 0.01 },
         metalness: { value: 0, min: 0, max: 1, step: 0.01 },
         envMapIntensity: { value: 0, min: 0, max: 5, step: 0.01 },
         dithering: true,
@@ -62,14 +62,14 @@ const Floor = () => {
       }),
       Blur: folder({
         blurX: { value: 1000, min: 0, max: 2048, step: 1 },
-        blurY: { value: 400, min: 0, max: 2048, step: 1 },
+        blurY: { value: 700, min: 0, max: 2048, step: 1 },
         mixBlur: { value: 30, min: 0, max: 100, step: 0.1 },
         depthToBlurRatioBias: { value: 0.25, min: 0, max: 1, step: 0.01 },
       }),
       Reflection: folder({
         mixStrength: { value: 56, min: 0, max: 200, step: 1 },
         mixContrast: { value: 1, min: 0, max: 5, step: 0.01 },
-        resolution: { value: 512, options: [256, 512, 1024, 2048] },
+        resolution: { value: 1024, options: [256, 512, 1024, 2048] },
         mirror: { value: .93, min: 0, max: 1, step: 0.01 },
         reflectorOffset: { value: 0, min: -1, max: 1, step: 0.01 },
       }),
@@ -85,7 +85,7 @@ const Floor = () => {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
-        <planeGeometry args={[50, 50]} />
+        <planeGeometry args={[25, 25]} />
         <MeshReflectorMaterial
           envMapIntensity={envMapIntensity}
           // normalMap={normalMap}

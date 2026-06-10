@@ -1,12 +1,11 @@
 import { Canvas } from "@react-three/fiber";
 import "./App.css";
-// import Floor from "./components/floor";
 import { OrbitControls, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
-import Car3D from "./components/car";
 import { Leva } from "leva";
 import Tunnel from "./components/tunnel";
 import CarProvider from "./context/car/car.provider";
+import { Car } from "./components/car";
 
 // position: [2, 3, 5]
 
@@ -27,7 +26,7 @@ const App = () => {
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
           {/* <Floor /> */}
           <Lights />
-          <Car3D />
+          <Car />
           <Tunnel />
 
           {/* <EffectComposer>

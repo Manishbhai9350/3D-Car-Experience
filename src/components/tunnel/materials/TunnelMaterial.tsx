@@ -9,19 +9,39 @@ import { useCar } from "../../../context/car/car.hook";
 import { COLORS } from "../../../data.";
 import gsap from "gsap";
 
-// ✅ Stable uniforms — created once, lives outside the component
-const tunnelUniforms = {
-  uTime:      new Uniform(0),
-  uColor1:    new Uniform(new Color(COLORS[0].dark)),
-  uColor2:    new Uniform(new Color(COLORS[0].light)),
-  uColorT1:   new Uniform(new Color(COLORS[0].dark)),
-  uColorT2:   new Uniform(new Color(COLORS[0].light)),
+const createUniforms = (initialYOffset: number, depth: number) => ({
+  uTime: new Uniform(0),
+  uNoiseUvYOffset: new Uniform(initialYOffset),
+  uDepth: new Uniform(depth),
+  uColor1: new Uniform(new Color(COLORS[0].dark)),
+  uColor2: new Uniform(new Color(COLORS[0].light)),
+  uColorT1: new Uniform(new Color(COLORS[0].dark)),
+  uColorT2: new Uniform(new Color(COLORS[0].light)),
   uTProgress: new Uniform(0),
-};
+});
 
-export const TunnelMaterial = () => {
-  const CSMRef = useRef<CSM<typeof MeshBasicMaterial>>(null!);
+interface TunnelMaterialProps {
+  depth: number;
+  initialYOffset?: number;
+  // Tunnel.tsx uses this ref to increment uNoiseUvYOffset on reset
+  uniformsRef?: React.MutableRefObject<ReturnType<
+    typeof createUniforms
+  > | null>;
+}
+
+export const TunnelMaterial = ({
+  initialYOffset = 0,
+  uniformsRef,
+  depth,
+}: TunnelMaterialProps) => {
   const { currentColorIndex } = useCar();
+
+  const uniforms = useRef(createUniforms(initialYOffset, depth));
+
+  // Expose uniforms to parent via ref
+  useEffect(() => {
+    if (uniformsRef) uniformsRef.current = uniforms.current;
+  }, []);
 
   const prevIndexRef = useRef(currentColorIndex);
   const tweenRef = useRef<gsap.core.Tween | null>(null);
@@ -30,20 +50,16 @@ export const TunnelMaterial = () => {
   useEffect(() => {
     const prevIndex = prevIndexRef.current;
     const nextIndex = currentColorIndex;
-
     if (prevIndex === nextIndex) return;
 
-    // Swap: current target becomes the new "from"
-    tunnelUniforms.uColor1.value.copy(tunnelUniforms.uColorT1.value);
-    tunnelUniforms.uColor2.value.copy(tunnelUniforms.uColorT2.value);
+    const u = uniforms.current;
+    u.uColor1.value.copy(u.uColorT1.value);
+    u.uColor2.value.copy(u.uColorT2.value);
+    u.uColorT1.value.set(COLORS[nextIndex].dark);
+    u.uColorT2.value.set(COLORS[nextIndex].light);
 
-    // Set new targets
-    tunnelUniforms.uColorT1.value.set(COLORS[nextIndex].dark);
-    tunnelUniforms.uColorT2.value.set(COLORS[nextIndex].light);
-
-    // Reset progress
     progressProxy.current.value = 0;
-    tunnelUniforms.uTProgress.value = 0;
+    u.uTProgress.value = 0;
 
     tweenRef.current?.kill();
     tweenRef.current = gsap.to(progressProxy.current, {
@@ -51,7 +67,7 @@ export const TunnelMaterial = () => {
       duration: 1.4,
       ease: "power2.inOut",
       onUpdate: () => {
-        tunnelUniforms.uTProgress.value = progressProxy.current.value;
+        uniforms.current.uTProgress.value = progressProxy.current.value;
       },
       onComplete: () => {
         prevIndexRef.current = nextIndex;
@@ -59,20 +75,24 @@ export const TunnelMaterial = () => {
     });
   }, [currentColorIndex]);
 
-  useEffect(() => () => { tweenRef.current?.kill(); }, []);
+  useEffect(
+    () => () => {
+      tweenRef.current?.kill();
+    },
+    [],
+  );
 
   useFrame(({ clock }) => {
-    tunnelUniforms.uTime.value = clock.getElapsedTime();
+    uniforms.current.uTime.value = clock.getElapsedTime();
   });
 
   return (
     <CustomShaderMaterial
-      ref={CSMRef}
       baseMaterial={MeshBasicMaterial}
       vertexShader={TunnelVertex}
       fragmentShader={TunnelFragment}
       side={DoubleSide}
-      uniforms={tunnelUniforms}
+      uniforms={uniforms.current}
     />
   );
 };

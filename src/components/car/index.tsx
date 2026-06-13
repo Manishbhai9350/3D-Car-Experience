@@ -7,8 +7,6 @@ import * as THREE from "three";
 import { useEffect, useRef, useState, type JSX } from "react";
 import { useGLTF } from "@react-three/drei";
 import { type GLTF } from "three-stdlib";
-import { useCar } from "../../context/car/car.hook";
-import { COLORS } from "../../data.";
 import BodyMaterial from "./materials/BodyMaterial";
 import { useFrame } from "@react-three/fiber";
 
@@ -183,7 +181,6 @@ export function Car(props: JSX.IntrinsicElements["group"]) {
   const tyresRef = useRef<(THREE.Group<THREE.Object3DEventMap> | null)[]>([]);
   const [bounds, setBounds] = useState({ min: 0, max: 2 });
 
-  const { setCurrentColorIndex, isAnimatingRef } = useCar();
 
   useEffect(() => {
     if (!groupRef.current) return;
@@ -224,11 +221,6 @@ export function Car(props: JSX.IntrinsicElements["group"]) {
         <mesh
           name="body"
           geometry={nodes.body.geometry}
-          onClick={() => {
-            if (!isAnimatingRef?.current) {
-              setCurrentColorIndex((p) => (p + 1) % COLORS.length);
-            }
-          }}
         >
           <BodyMaterial minY={bounds.min} maxY={bounds.max * 1.5} />
         </mesh>

@@ -16,7 +16,7 @@ void main() {
 
     vec2 noiseUV = vUv + vec2(0.0, uNoiseUvYOffset);
 
-    float offset = (vNoise(noiseUV, uTime) * .5 + .5) * intensity;
+    float offset = (vNoise(noiseUV, uTime) * .5 + .5) * intensity * 2.5;
 
     // offset.xy = offset.xy * 0.0;
 

@@ -33,7 +33,7 @@ void main() {
     fade = (vPosition.z + uDepth / 2.0) / uDepth;
     fade = smoothstep(.0, 1.0, fade);
     fade = sin(fade * PI);
-    fade *= abs(sin((dot(vPosition,vec3(0.1,1.0,.4 - offset * .1 + vNoise(noiseUV, uTime) * .2 + .1)) + uTime * 1.5) * 10.0));
+    // fade *= abs(sin((dot(vPosition,vec3(0.1,1.0,.4 - offset * .1 + vNoise(noiseUV, uTime) * .2 + .1)) + uTime * 1.5) * 10.0));
 
     csm_FragColor = mix(vec4(0, 0, 0, 1.0), csm_FragColor, fade * intensity);
 

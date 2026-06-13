@@ -43,18 +43,45 @@ const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
     progressProxy.current.value = 0;
     CSMRef.current.uniforms.uProgress.value = 0;
 
+    // gsap.killTweensOf(".color-progress-line");
+    // gsap.set(".color-progress-line", {
+    //   transformOrigin: "left",
+    // });
+
     tweenRef.current?.kill();
     tweenRef.current = gsap.to(progressProxy.current, {
       value: 1,
       duration: 2,
       ease: "power2.inOut",
-      onUpdate: () => {
+      onUpdate() {
         if (!CSMRef.current) return;
+
+        // shader update
         CSMRef.current.uniforms.uProgress.value = progressProxy.current.value;
+
+        // let gsap handle the line too — not style.transform directly
+        gsap.set(".color-progress-line", {
+          scaleX: progressProxy.current.value,
+          transformOrigin: "left center",
+        });
       },
-      onComplete: () => {
+      onComplete() {
         prevColorIndexRef.current = nextIndex;
-        isAnimatingRef.current = false;
+
+        // now collapse it — gsap fully owns this element so no conflict
+        gsap.to(".color-progress-line", {
+          scaleX: 0,
+          duration: 0.5,
+          ease: "power2.inOut",
+          transformOrigin: "right center",
+          onComplete() {
+            // reset origin for next animation
+            gsap.set(".color-progress-line", {
+              transformOrigin: "left center",
+            });
+            isAnimatingRef.current = false;
+          },
+        });
       },
     });
   }, [currentColorIndex, colors, isAnimatingRef]);
@@ -63,6 +90,13 @@ const BodyMaterial = ({ maxY, minY }: BodyMaterialProps) => {
   useEffect(
     () => () => {
       tweenRef.current?.kill();
+      tweenRef.current?.kill();
+      // also reset the line if a previous animation was interrupted
+      gsap.killTweensOf(".color-progress-line");
+      gsap.set(".color-progress-line", {
+        scaleX: 0,
+        transformOrigin: "left center",
+      });
     },
     [],
   );

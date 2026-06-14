@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import "./App.css";
 import { OrbitControls, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
-import { Leva } from "leva";
+import Floor from "./components/floor";
 import Tunnel from "./components/tunnel";
 import CarProvider from "./context/car/car.provider";
 import { Car } from "./components/car";
@@ -26,7 +26,7 @@ const App = () => {
         <Canvas shadows camera={{ fov: 50, position: [0, 2, 10] }}>
           <Stats />
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
-          {/* <Floor /> */}
+          <Floor />
           <Lights />
           <Car />
           <Tunnel />

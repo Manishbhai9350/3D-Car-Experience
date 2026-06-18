@@ -11,7 +11,7 @@ const BGM = () => {
     contextRef.current = audioContext;
 
     const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
+    analyser.fftSize = 1024;
     analyser.smoothingTimeConstant = 0.8;
 
     setAnalyser(analyser);
@@ -27,24 +27,35 @@ const BGM = () => {
 
   useEffect(() => {
     const OnClick = async () => {
-      if (!AudioRef.current || Played) return;
+      if (!AudioRef.current) return;
 
-      // ✅ Resume context
-      await contextRef.current?.resume();
+      if(Played) {
+  
+        // ✅ Unmute (important if you ever re-add muted)
+        AudioRef.current.muted = true;
+  
+        // ✅ Play
+        await AudioRef.current.pause();
 
-      // ✅ Unmute (important if you ever re-add muted)
-      AudioRef.current.muted = false;
+      } else {
+        // ✅ Resume context
+        await contextRef.current?.resume();
+  
+        // ✅ Unmute (important if you ever re-add muted)
+        AudioRef.current.muted = false;
+  
+        // ✅ Play
+        await AudioRef.current.play();
+      }
 
-      // ✅ Play
-      await AudioRef.current.play();
 
-      setPlayed(true);
+      setPlayed(p => !p);
     };
 
-    window.addEventListener("click", OnClick);
+    window.addEventListener("dblclick", OnClick);
 
     return () => {
-      window.removeEventListener("click", OnClick);
+      window.removeEventListener("dblclick", OnClick);
     };
   }, [Played]);
 

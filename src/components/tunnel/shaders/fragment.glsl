@@ -16,16 +16,23 @@ uniform sampler2D uAudioTexture;
 
 void main() {
 
-    float progress = pow(uTProgress,4.0);
+    float progress = pow(uTProgress, 4.0);
     // Interpolate between current and target colors
     vec3 dark = mix(uColor1, uColorT1, progress);
     vec3 light = mix(uColor2, uColorT2, progress);
 
     float intensity = smoothstep(0., .8, sin(vUv.x * PI));
 
+        // Audio Remaped Z
+    float z = maprange(abs(vPosition.z), 0.0, uDepth, 0.0, 1.0);
+
+    // Audio Reactive Intensity
+    float AudioIntensity = texture(uAudioTexture, vec2(0.0, fract(z + 1.0))).r;
+    float RemapedAudioIntensity = maprange(AudioIntensity, 0.0, 1.0, -1.0, 1.0);
+
     vec2 noiseUV = vUv + vec2(0.0, uNoiseUvYOffset);
 
-    float offset = (vNoise(noiseUV, uTime) * .5 + .5) * intensity;
+    float offset = (vNoise(noiseUV, uTime, vec2(RemapedAudioIntensity * 5.0 , 0.0)) * .5 + .5) * intensity;
 
     vec3 color = mix(dark, light, offset);
 
@@ -39,8 +46,10 @@ void main() {
 
     csm_FragColor = mix(vec4(0, 0, 0, 1.0), csm_FragColor, fade * intensity);
 
-    float z = maprange(abs(vPosition.z), 0.0, uDepth,0.0,1.0);
-    // csm_FragColor.rgb = vec3(z,0.0,0.0);
+    float AudioSmoothness = smoothstep(vUv.y, 0.0, .1 / 2.0);
+    AudioSmoothness = min(AudioSmoothness, smoothstep(vUv.y, 1.0, 1.0 - .1 / 2.0));
+    AudioSmoothness = pow(AudioSmoothness, 5.0);
+
 
     // csm_FragColor = mix(vec4(light,1.0),mix(vec4(0, 0, 0, 1.0), csm_FragColor, fade * intensity),(1.0 - fade * intensity));
 }

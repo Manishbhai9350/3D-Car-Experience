@@ -19,9 +19,9 @@
 //     return sum;
 // }
 
-float vNoise(vec2 v, float t) {
+float vNoise(vec2 v, float t, vec2 addFac) {
     // return Perlin3d(v);
     // return SimplexNoise(v);
-    vec3 vV = vec3((v + vec2(0.0,t * .0002)) * vec2(5.0,200.0),0.0);
+    vec3 vV = vec3((v + vec2(0.0,t * .0002)) * (vec2(10.0,200.0)),0.0);
     return Perlin3d(vV) * .5;
 }

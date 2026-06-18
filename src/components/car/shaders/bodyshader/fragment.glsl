@@ -2,8 +2,8 @@ varying vec3 vPosition;
 
 uniform float uMinY;
 uniform float uMaxY;
-uniform float uProgress;
 uniform float uTime;
+uniform float uProgress;
 uniform float uNoiseScale;
 uniform float uNoiseStrength;
 

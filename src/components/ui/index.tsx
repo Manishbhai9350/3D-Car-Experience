@@ -15,7 +15,6 @@ const UI = () => {
     <div className="ui">
       <div className="colors">
         {colors.map((C, i) => {
-          console.log(C.body.getHexString());
           return (
             <div
               key={i}

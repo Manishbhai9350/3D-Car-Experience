@@ -1,6 +1,13 @@
 import TunnelVertex from "../shaders/vertex.glsl";
 import TunnelFragment from "../shaders/fragment.glsl";
-import { Color, DoubleSide, MeshBasicMaterial, Uniform } from "three";
+import {
+  Color,
+  DataTexture,
+  DoubleSide,
+  MeshBasicMaterial,
+  RedFormat,
+  Uniform,
+} from "three";
 import CustomShaderMaterial from "three-custom-shader-material";
 import CSM from "three-custom-shader-material/vanilla";
 import { useRef, useEffect } from "react";
@@ -18,6 +25,7 @@ const createUniforms = (initialYOffset: number, depth: number) => ({
   uColorT1: new Uniform(new Color(COLORS[0].dark)),
   uColorT2: new Uniform(new Color(COLORS[0].light)),
   uTProgress: new Uniform(0),
+  uAudioTexture: { value: null }, // 🔥 IMPORTANT
 });
 
 interface TunnelMaterialProps {
@@ -27,25 +35,48 @@ interface TunnelMaterialProps {
   uniformsRef?: React.MutableRefObject<ReturnType<
     typeof createUniforms
   > | null>;
+  audioAnalyser: AnalyserNode | null;
 }
 
 export const TunnelMaterial = ({
   initialYOffset = 0,
   uniformsRef,
   depth,
+  audioAnalyser,
 }: TunnelMaterialProps) => {
   const { currentColorIndex } = useCar();
 
   const uniforms = useRef(createUniforms(initialYOffset, depth));
+  const CSMRef = useRef<CSM<typeof MeshBasicMaterial>>(null);
 
-  // Expose uniforms to parent via ref
-  useEffect(() => {
-    if (uniformsRef) uniformsRef.current = uniforms.current;
-  }, []);
+  // 🔥 AUDIO (SAFE MUTABLE REFS)
+  const dataRef = useRef<Uint8Array | null>(null);
+  const textureRef = useRef<DataTexture | null>(null);
 
   const prevIndexRef = useRef(currentColorIndex);
   const tweenRef = useRef<gsap.core.Tween | null>(null);
   const progressProxy = useRef({ value: 0 });
+
+  // -------------------------------
+  // 🎧 INIT AUDIO TEXTURE
+  // -------------------------------
+  useEffect(() => {
+    if (!audioAnalyser) return;
+
+    const size = audioAnalyser.frequencyBinCount;
+
+    const data = new Uint8Array(size);
+    const texture = new DataTexture(data, 1, size, RedFormat);
+
+    texture.needsUpdate = true;
+
+    dataRef.current = data;
+    textureRef.current = texture;
+
+    if (CSMRef.current) {
+      CSMRef.current.uniforms.uAudioTexture = { value: texture };
+    }
+  }, [audioAnalyser]);
 
   useEffect(() => {
     const prevIndex = prevIndexRef.current;
@@ -82,12 +113,44 @@ export const TunnelMaterial = ({
     [],
   );
 
+  // -------------------------------
+  // ⚡ FRAME LOOP (AUDIO UPDATE)
+  // -------------------------------
+  useFrame(({ clock }) => {
+    if (!CSMRef.current) return;
+
+    CSMRef.current.uniforms.uTime.value = clock.getElapsedTime();
+
+    if (!audioAnalyser || !dataRef.current || !textureRef.current) return;
+
+    const data = dataRef.current;
+    const texture = textureRef.current;
+
+    // 🎧 get frequency data
+    audioAnalyser.getByteFrequencyData(data);
+
+    // 🚀 FASTEST WAY (no loop)
+    texture.image.data.set(data);
+
+    texture.needsUpdate = true;
+
+    if (!CSMRef.current.uniforms.uAudioTexture.value) {
+      CSMRef.current.uniforms.uAudioTexture.value = texture;
+    }
+  });
+
+  // Expose uniforms to parent via ref
+  useEffect(() => {
+    if (uniformsRef) uniformsRef.current = uniforms.current;
+  }, [uniformsRef]);
+
   useFrame(({ clock }) => {
     uniforms.current.uTime.value = clock.getElapsedTime();
   });
 
   return (
     <CustomShaderMaterial
+      ref={CSMRef}
       baseMaterial={MeshBasicMaterial}
       vertexShader={TunnelVertex}
       fragmentShader={TunnelFragment}

@@ -7,7 +7,7 @@ import CSM from "three-custom-shader-material/vanilla";
 // Shared counter — increments each time any segment resets
 let globalYOffset = 3; // starts at 3 since segments init at 0, 1, 2
 
-const Tunnel = () => {
+const Tunnel = ({ audioAnalyser }: { audioAnalyser: AnalyserNode | null }) => {
   const Radius = 5;
   const Depth = 80;
 
@@ -18,14 +18,10 @@ const Tunnel = () => {
   ];
 
   // Holds each TunnelMaterial's uniforms so we can update uNoiseUvYOffset
-  const uniformRefs = [
-    useRef(null),
-    useRef(null),
-    useRef(null),
-  ];
+  const uniformRefs = [useRef(null), useRef(null), useRef(null)];
 
-  useFrame((_,dt) => {
-    if (refs.some(r => !r.current)) return;
+  useFrame((_, dt) => {
+    if (refs.some((r) => !r.current)) return;
 
     refs.forEach((ref, i) => {
       ref.current.position.z -= 3.0 * dt;
@@ -51,8 +47,15 @@ const Tunnel = () => {
           position={[0, 0, z]}
           rotation={[Math.PI / 2, 0, 0]}
         >
-          <cylinderGeometry args={[Radius, Radius, Depth, 130, 130, true, Math.PI / 2, Math.PI]} />
-          <TunnelMaterial depth={Depth} initialYOffset={i} uniformsRef={uniformRefs[i]} />
+          <cylinderGeometry
+            args={[Radius, Radius, Depth, 130, 130, true, Math.PI / 2, Math.PI]}
+          />
+          <TunnelMaterial
+            audioAnalyser={audioAnalyser}
+            depth={Depth}
+            initialYOffset={i}
+            uniformsRef={uniformRefs[i]}
+          />
         </mesh>
       ))}
     </group>

@@ -9,8 +9,10 @@ uniform vec3 uColorT1;
 uniform vec3 uColorT2;
 uniform float uTProgress;
 uniform float uNoiseUvYOffset;
+uniform sampler2D uAudioTexture;
 
 #include ../../includes/vNoise.glsl
+#include ../../includes/utils.glsl
 
 void main() {
 
@@ -36,6 +38,9 @@ void main() {
     // fade *= abs(sin((dot(vPosition,vec3(0.1,1.0,.4 - offset * .1 + vNoise(noiseUV, uTime) * .2 + .1)) + uTime * 1.5) * 10.0));
 
     csm_FragColor = mix(vec4(0, 0, 0, 1.0), csm_FragColor, fade * intensity);
+
+    float z = maprange(abs(vPosition.z), 0.0, uDepth,0.0,1.0);
+    // csm_FragColor.rgb = vec3(z,0.0,0.0);
 
     // csm_FragColor = mix(vec4(light,1.0),mix(vec4(0, 0, 0, 1.0), csm_FragColor, fade * intensity),(1.0 - fade * intensity));
 }

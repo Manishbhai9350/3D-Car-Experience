@@ -8,9 +8,7 @@ const RAW_COLORS = [
   "#ff1744", // pure red
   "#e040fb", // vivid orchid
   "#ff6b35", // orange
-  "#00bcd4", // teal
   "#76ff03", // chartreuse
-  "#bf5af2", // purple
   "#00e5ff", // cyan
   "#ff9f0a", // amber
   "#00ff88", // mint green

@@ -2,17 +2,20 @@ import { Canvas } from "@react-three/fiber";
 import "./App.css";
 import { OrbitControls, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
-import Floor from "./components/floor";
 import Tunnel from "./components/tunnel";
 import CarProvider from "./context/car/car.provider";
 import { Car } from "./components/car";
 import UI from "./components/ui";
+import BGM from "./components/audio/bgm";
 
 // position: [2, 3, 5]
 
 const App = () => {
+  const { analyser, dom } = BGM();
+
   return (
     <CarProvider>
+      {dom}
       <main>
         <UI />
         {/* <Leva
@@ -26,10 +29,10 @@ const App = () => {
         <Canvas shadows camera={{ fov: 50, position: [0, 2, 10] }}>
           <Stats />
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
-          <Floor />
+          {/* <Floor /> */}
           <Lights />
           <Car />
-          <Tunnel />
+          <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>
             <DepthOfField

@@ -26,6 +26,7 @@ const createUniforms = (initialYOffset: number, depth: number) => ({
   uColorT2: new Uniform(new Color(COLORS[0].light)),
   uTProgress: new Uniform(0),
   uAudioTexture: { value: null }, // 🔥 IMPORTANT
+  uAudioAverage: { value: 0 }, // 🔥 IMPORTANT
 });
 
 interface TunnelMaterialProps {
@@ -133,6 +134,10 @@ export const TunnelMaterial = ({
     texture.image.data.set(data);
 
     texture.needsUpdate = true;
+
+    const AudioAverage = data.reduce((a,v) => a + v/data.length/255,0);
+    CSMRef.current.uniforms.uAudioAverage.value = AudioAverage;
+    // CSMRef.current.uniforms.uAudioAverage.value = 1;
 
     if (!CSMRef.current.uniforms.uAudioTexture.value) {
       CSMRef.current.uniforms.uAudioTexture.value = texture;

@@ -48,7 +48,7 @@ const Tunnel = ({ audioAnalyser }: { audioAnalyser: AnalyserNode | null }) => {
           rotation={[Math.PI / 2, 0, 0]}
         >
           <cylinderGeometry
-            args={[Radius, Radius, Depth, 130, 130, true, Math.PI / 2, Math.PI]}
+            args={[Radius, Radius, Depth, 200, 200, true, Math.PI / 2, Math.PI]}
           />
           <TunnelMaterial
             audioAnalyser={audioAnalyser}

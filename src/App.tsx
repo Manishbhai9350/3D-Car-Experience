@@ -7,6 +7,7 @@ import CarProvider from "./context/car/car.provider";
 import { Car } from "./components/car";
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
+import { Cybercar } from "./components/cybercar";
 
 // position: [2, 3, 5]
 
@@ -31,7 +32,8 @@ const App = () => {
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
           {/* <Floor /> */}
           <Lights />
-          <Car />
+          {/* <Car /> */}
+          <Cybercar />
           <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>

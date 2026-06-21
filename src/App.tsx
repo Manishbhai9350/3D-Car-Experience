@@ -4,10 +4,9 @@ import { OrbitControls, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
 import CarProvider from "./context/car/car.provider";
-import { Car } from "./components/car";
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
-import { Cybercar } from "./components/cybercar";
+import { McLaren } from "./components/maclarn";
 
 // position: [2, 3, 5]
 
@@ -33,7 +32,7 @@ const App = () => {
           {/* <Floor /> */}
           <Lights />
           {/* <Car /> */}
-          <Cybercar />
+          <McLaren />
           <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>

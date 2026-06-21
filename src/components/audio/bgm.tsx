@@ -26,8 +26,11 @@ const BGM = () => {
   }, []);
 
   useEffect(() => {
-    const OnClick = async () => {
+    const OnClick = async (e:MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       if (!AudioRef.current) return;
+
 
       if(Played) {
   

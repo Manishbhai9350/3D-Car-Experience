@@ -6,7 +6,7 @@ import Tunnel from "./components/tunnel";
 import CarProvider from "./context/car/car.provider";
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
-import { McLaren } from "./components/maclarn";
+import { Car } from "./components/car";
 
 // position: [2, 3, 5]
 
@@ -17,6 +17,7 @@ const App = () => {
     <CarProvider>
       {dom}
       <main>
+        <p className="audio-instruction">Double Click For Audio</p>
         <UI />
         {/* <Leva
           titleBar={{
@@ -27,12 +28,12 @@ const App = () => {
           }}
         /> */}
         <Canvas shadows camera={{ fov: 50, position: [0, 2, 10] }}>
-          <Stats />
+          {/* <Stats /> */}
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
           {/* <Floor /> */}
           <Lights />
-          {/* <Car /> */}
-          <McLaren />
+          <Car />
+          {/* <McLaren /> */}
           <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>

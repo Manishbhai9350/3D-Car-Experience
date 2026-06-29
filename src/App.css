@@ -70,3 +70,18 @@ main {
     filter: saturate(100%);
   }
 }
+
+
+
+.audio-instruction {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: .9rem;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 9999999;
+  color: rgb(205, 205, 205);
+  /* mix-blend-mode: difference; */
+}

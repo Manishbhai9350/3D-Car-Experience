@@ -28,7 +28,7 @@ const App = () => {
           }}
         /> */}
         <Canvas shadows camera={{ fov: 50, position: [0, 2, 10] }}>
-          {/* <Stats /> */}
+          <Stats />
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
           {/* <Floor /> */}
           <Lights />

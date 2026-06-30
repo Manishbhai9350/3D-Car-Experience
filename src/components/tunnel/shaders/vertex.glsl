@@ -1,5 +1,8 @@
 varying vec2 vUv;
 varying vec3 vPosition;
+varying float vOffset;
+varying float vAudioSmoothness;
+varying float vAudioIntensity;
 
 uniform float uDepth;
 uniform float uTime;
@@ -13,41 +16,30 @@ uniform sampler2D uAudioTexture;
 void main() {
     vUv = uv;
 
-    // Position with updated model matrix;
     vec3 worldPos = (modelMatrix * vec4(position, 1.0)).xyz;
     vPosition = worldPos;
 
-    // Audio Remaped Z
     float z = maprange(abs(worldPos.z), 0.0, uDepth, 0.0, 1.0);
-
-    // Audio Reactive Intensity
     float AudioIntensity = texture(uAudioTexture, vec2(0.0, fract(z + 1.0))).r;
     float RemapedAudioIntensity = maprange(uAudioAverage, 0.0, 1.0, -1.0, 1.0);
 
-    // Tunnel Intensity to make it smoothly blend with floor
     float intensity = smoothstep(0., .8, sin(vUv.x * PI));
 
-    // Uvs for Noise Function
     vec2 noiseUV = vUv + vec2(0.0, uNoiseUvYOffset) * 2.0;
+    float offset = (vNoise(noiseUV * .3, 0.0, vec2(RemapedAudioIntensity * 5.0, 0.0)) * .5 + .5) * intensity;
 
-    // Offset
-    float offset = (vNoise(noiseUV, uTime, vec2(RemapedAudioIntensity * 5.0, 0.0)) * .5 + .5) * intensity * 1.5;
-
-    // Removing Jagged Edges Where Tunnels Meet
     float AudioSmoothnessThreshold = .03;
-    // Start Of Tunnel First
     float AudioSmoothness = smoothstep(vUv.y, 0.0, AudioSmoothnessThreshold);
-    // End Of Tunnel Second
     AudioSmoothness = min(AudioSmoothness, smoothstep(vUv.y, 1.0, 1.0 - AudioSmoothnessThreshold));
 
-    // float AudioSmoothness = smoothstep(vUv.y, 0.0, .1 / 2.0);
-    // AudioSmoothness = min(AudioSmoothness, smoothstep(vUv.y, 1.0, 1.0 - .1 / 2.0));
-    // AudioSmoothness = pow(AudioSmoothness, 5.0);
+    // Pass to fragment so it stays perfectly in sync
+    vOffset = offset;
+    vAudioSmoothness = AudioSmoothness;
+    vAudioIntensity = AudioIntensity;
 
-    // AudioIntensity *= AudioSmoothness;
+    vec3 deviation = offset * 1.5 * normal * (1.0 + AudioIntensity) * AudioSmoothness;
 
-    // AudioIntensity = pow(AudioIntensity,5.0);
+    deviation = clamp(deviation,-1.5,1.5);
 
-    // csm_Position.y -= 50.0;
-    csm_Position.xyz += offset * normal * (1.0 + AudioIntensity) * AudioSmoothness;
+    csm_Position.xyz += deviation;
 }

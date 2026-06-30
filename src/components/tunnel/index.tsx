@@ -1,64 +1,52 @@
-import { TunnelMaterial } from "./materials/TunnelMaterial";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { type Mesh, type MeshBasicMaterial, type PlaneGeometry } from "three";
+import { type Mesh, type MeshBasicMaterial, type PlaneGeometry, type IUniform, type Texture } from "three";
 import CSM from "three-custom-shader-material/vanilla";
+import { TunnelMaterial } from "./materials/TunnelMaterial";
 
-// Shared counter — increments each time any segment resets
-let globalYOffset = 3; // starts at 3 since segments init at 0, 1, 2
+// ---- Constants ----
+const RADIUS = 5;
+const DEPTH = 80;
+const SCROLL_SPEED = 0.1;
 
-const Tunnel = ({ audioAnalyser }: { audioAnalyser: AnalyserNode | null }) => {
-  const Radius = 5;
-  const Depth = 80;
+// ---- Uniform shape, strongly typed ----
+export interface TunnelUniforms {
+  uTime: IUniform<number>;
+  uDepth: IUniform<number>;
+  uNoiseUvYOffset: IUniform<number>;
+  uAudioAverage: IUniform<number>;
+  uAudioTexture: IUniform<Texture | null>;
+}
 
-  const refs = [
-    useRef<Mesh<PlaneGeometry, CSM<typeof MeshBasicMaterial>>>(null!),
-    useRef<Mesh<PlaneGeometry, CSM<typeof MeshBasicMaterial>>>(null!),
-    useRef<Mesh<PlaneGeometry, CSM<typeof MeshBasicMaterial>>>(null!),
-  ];
+type TunnelMesh = Mesh<PlaneGeometry, CSM<typeof MeshBasicMaterial>>;
 
-  // Holds each TunnelMaterial's uniforms so we can update uNoiseUvYOffset
-  const uniformRefs = [useRef(null), useRef(null), useRef(null)];
+interface TunnelProps {
+  audioAnalyser: AnalyserNode | null;
+}
+
+const Tunnel = ({ audioAnalyser }: TunnelProps) => {
+  const meshRef = useRef<TunnelMesh>(null!);
+  const uniformsRef = useRef<TunnelUniforms | null>(null);
 
   useFrame((_, dt) => {
-    if (refs.some((r) => !r.current)) return;
+    const uniforms = uniformsRef.current;
+    if (!uniforms) return;
 
-    refs.forEach((ref, i) => {
-      ref.current.position.z -= 3.0 * dt;
-
-      if (ref.current.position.z < -Depth) {
-        ref.current.position.z += 3 * Depth;
-
-        // Assign next continuous Y offset to this segment
-        if (uniformRefs[i].current) {
-          uniformRefs[i].current.uNoiseUvYOffset.value = globalYOffset;
-          globalYOffset += 1;
-        }
-      }
-    });
+    uniforms.uNoiseUvYOffset.value += SCROLL_SPEED * dt * .1;
   });
 
   return (
-    <group>
-      {([0, Depth, 2 * Depth] as const).map((z, i) => (
-        <mesh
-          key={i}
-          ref={refs[i]}
-          position={[0, 0, z]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry
-            args={[Radius, Radius, Depth, 200, 200, true, Math.PI / 2, Math.PI]}
-          />
-          <TunnelMaterial
-            audioAnalyser={audioAnalyser}
-            depth={Depth}
-            initialYOffset={i}
-            uniformsRef={uniformRefs[i]}
-          />
-        </mesh>
-      ))}
-    </group>
+    <mesh ref={meshRef} rotation={[Math.PI / 2, 0, 0]}>
+      <cylinderGeometry
+        args={[RADIUS, RADIUS, DEPTH, 200, 200, true, Math.PI / 2, Math.PI]}
+      />
+      <TunnelMaterial
+        audioAnalyser={audioAnalyser}
+        depth={DEPTH}
+        initialYOffset={0}
+        uniformsRef={uniformsRef}
+      />
+    </mesh>
   );
 };
 

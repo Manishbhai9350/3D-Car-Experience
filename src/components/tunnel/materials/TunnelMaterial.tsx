@@ -107,6 +107,14 @@ export const TunnelMaterial = ({
     });
   }, [currentColorIndex]);
 
+  useFrame(({ clock }) => {
+    const time = clock.getElapsedTime();
+
+    if(uniforms.current.uNoiseUvYOffset) {
+      uniforms.current.uNoiseUvYOffset.value = time * .03;
+    }
+  })
+
   useEffect(
     () => () => {
       tweenRef.current?.kill();

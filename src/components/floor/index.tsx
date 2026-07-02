@@ -1,7 +1,9 @@
 import { MeshReflectorMaterial, useTexture } from "@react-three/drei";
 import { useControls, folder } from "leva";
-import { useEffect } from "react";
-import { RepeatWrapping } from "three";
+import { useEffect, useRef } from "react";
+import { MeshBasicMaterial, RepeatWrapping } from "three";
+import CSM from "three-custom-shader-material/vanilla";
+import CustomShaderMaterial from "three-custom-shader-material";
 
 const Floor = () => {
   const [normalMap, roughnessMap] = useTexture([
@@ -69,8 +71,8 @@ const Floor = () => {
       Reflection: folder({
         mixStrength: { value: 56, min: 0, max: 200, step: 1 },
         mixContrast: { value: 1, min: 0, max: 5, step: 0.01 },
-        resolution: { value: 1024, options: [256, 512, 1024, 2048] },
-        mirror: { value: .93, min: 0, max: 1, step: 0.01 },
+        resolution: { value: 256, options: [256, 512, 1024, 2048] },
+        mirror: { value: 0.93, min: 0, max: 1, step: 0.01 },
         reflectorOffset: { value: 0, min: -1, max: 1, step: 0.01 },
       }),
       Depth: folder({
@@ -108,7 +110,69 @@ const Floor = () => {
           reflectorOffset={reflectorOffset}
         />
       </mesh>
+      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[5, 5]} />
+        <CircleMaterial />
+      </mesh>
     </group>
+  );
+};
+
+const CircleVertex = /* glsl */ `
+
+  varying vec2 vUv;
+
+  void main(){
+
+    vUv = uv;
+    
+  }
+`;
+const CircleFragment = /* glsl */ `
+
+  varying vec2 vUv;
+
+  void main(){
+
+    vec2 centeredUV = vUv - vec2(.5);
+
+    float circle = length(centeredUV);
+    float smoothed = smoothstep(.5,.492,circle);
+
+    // Using tan() inverse to calculate the theta;
+    float angle = atan(centeredUV.y,centeredUV.x) + PI;
+
+    angle = angle / 2.0 / PI;
+
+    angle = fract(angle * 10.0);
+
+    float smoothedEdge1 = smoothstep(1.0,.9,angle);
+    float smoothedEdge2 = 1.0 - smoothstep(.1,0.0,angle);
+    angle = step(angle,.9);
+
+    angle = min(smoothedEdge2,smoothedEdge1);
+
+
+
+    csm_FragColor = vec4(smoothed);
+
+    csm_FragColor.rgb = vec3(angle);
+
+    csm_FragColor.rgb = vec3(min(smoothedEdge1,smoothedEdge2));
+
+  }
+`;
+
+export const CircleMaterial = () => {
+  const csm = useRef<CSM<typeof MeshBasicMaterial>>(null);
+
+  return (
+    <CustomShaderMaterial
+      baseMaterial={MeshBasicMaterial}
+      vertexShader={CircleVertex}
+      fragmentShader={CircleFragment}
+      transparent
+    />
   );
 };
 

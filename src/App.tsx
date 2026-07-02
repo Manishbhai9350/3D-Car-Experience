@@ -7,8 +7,10 @@ import CarProvider from "./context/car/car.provider";
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
 import { Car } from "./components/car";
+import Floor from "./components/floor";
 
 // position: [2, 3, 5]
+// [0, 2, 10]
 
 const App = () => {
   const { analyser, dom } = BGM();
@@ -27,14 +29,13 @@ const App = () => {
             },
           }}
         /> */}
-        <Canvas shadows camera={{ fov: 50, position: [0, 2, 10] }}>
+        <Canvas shadows camera={{ fov: 50, position: [0, 2, 0] }}>
           <Stats />
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
-          {/* <Floor /> */}
+          <Floor />
           <Lights />
-          <Car />
-          {/* <McLaren /> */}
-          <Tunnel audioAnalyser={analyser} />
+          {/* <Car /> */}
+          {/* <Tunnel audioAnalyser={analyser} /> */}
 
           {/* <EffectComposer>
             <DepthOfField

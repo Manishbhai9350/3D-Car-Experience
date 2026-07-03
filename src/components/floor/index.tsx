@@ -1,9 +1,16 @@
 import { MeshReflectorMaterial, useTexture } from "@react-three/drei";
 import { useControls, folder } from "leva";
 import { useEffect, useRef } from "react";
-import { MeshBasicMaterial, RepeatWrapping } from "three";
+import {
+  DataTexture,
+  MeshBasicMaterial,
+  RedFormat,
+  RepeatWrapping,
+  Uniform,
+} from "three";
 import CSM from "three-custom-shader-material/vanilla";
 import CustomShaderMaterial from "three-custom-shader-material";
+import { useOnAudio } from "../../context/audio/audio.hook";
 
 const Floor = () => {
   const [normalMap, roughnessMap] = useTexture([
@@ -130,6 +137,7 @@ const CircleVertex = /* glsl */ `
 `;
 const CircleFragment = /* glsl */ `
 
+  uniform sampler2D uAudioTexture;
   varying vec2 vUv;
 
   void main(){
@@ -144,33 +152,76 @@ const CircleFragment = /* glsl */ `
 
     angle = angle / 2.0 / PI;
 
-    angle = fract(angle * 10.0);
+    float AngleProg = angle;
+    
+    angle = fract(angle * 15.0);
+    
+    float gapFactor = .7;
 
-    float smoothedEdge1 = smoothstep(1.0,.9,angle);
-    float smoothedEdge2 = 1.0 - smoothstep(.1,0.0,angle);
-    angle = step(angle,.9);
+    
+    angle = step(angle,gapFactor);
 
-    angle = min(smoothedEdge2,smoothedEdge1);
+    angle *= 1. - step(length(centeredUV),.2);
 
 
 
     csm_FragColor = vec4(smoothed);
 
     csm_FragColor.rgb = vec3(angle);
+    csm_FragColor.a = min(step(length(centeredUV),.5),angle) * 0.0 + 1.0;
 
-    csm_FragColor.rgb = vec3(min(smoothedEdge1,smoothedEdge2));
+    float audioIntensity = texture(uAudioTexture,vec2(AngleProg * .7)).r;
+
+    csm_FragColor.r = audioIntensity;
+
+    csm_FragColor.gb = vec2(0.0);
+
 
   }
 `;
 
 export const CircleMaterial = () => {
   const csm = useRef<CSM<typeof MeshBasicMaterial>>(null);
+  const dataRef = useRef<Uint8Array | null>(null);
+  const textureRef = useRef<DataTexture | null>(null);
+
+  // 🔥 you need an analyser reference to know frequencyBinCount.
+  // Simplest: pull it off the bus, or accept it as a prop like TunnelMaterial does.
+  useEffect(() => {
+    const size = 512; // match your analyser.fftSize / 2 (frequencyBinCount)
+    const data = new Uint8Array(size);
+    const texture = new DataTexture(data, 1, size, RedFormat);
+    texture.needsUpdate = true;
+
+    dataRef.current = data;
+    textureRef.current = texture;
+
+    if (csm.current) {
+      csm.current.uniforms.uAudioTexture.value = texture;
+    }
+  }, []);
+
+  useOnAudio((frequencyData, average) => {
+    if (!csm.current || !textureRef.current || !textureRef.current.image.data)
+      return;
+
+    textureRef.current.image.data.set(frequencyData);
+    textureRef.current.needsUpdate = true;
+
+    csm.current.uniforms.uAudioAverage.value = average;
+  });
 
   return (
     <CustomShaderMaterial
+      ref={csm}
       baseMaterial={MeshBasicMaterial}
       vertexShader={CircleVertex}
       fragmentShader={CircleFragment}
+      uniforms={{
+        uTime: new Uniform(0),
+        uAudioTexture: new Uniform(null),
+        uAudioAverage: new Uniform(0),
+      }}
       transparent
     />
   );

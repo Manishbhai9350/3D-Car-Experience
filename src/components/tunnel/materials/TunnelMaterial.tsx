@@ -15,6 +15,7 @@ import { useFrame } from "@react-three/fiber";
 import { useCar } from "../../../context/car/car.hook";
 import { COLORS } from "../../../data.";
 import gsap from "gsap";
+import { useOnAudio } from "../../../context/audio/audio.hook";
 
 const createUniforms = (initialYOffset: number, depth: number) => ({
   uTime: new Uniform(0),
@@ -110,10 +111,10 @@ export const TunnelMaterial = ({
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
 
-    if(uniforms.current.uNoiseUvYOffset) {
-      uniforms.current.uNoiseUvYOffset.value = time * .03;
+    if (uniforms.current.uNoiseUvYOffset) {
+      uniforms.current.uNoiseUvYOffset.value = time * 0.03;
     }
-  })
+  });
 
   useEffect(
     () => () => {
@@ -125,30 +126,17 @@ export const TunnelMaterial = ({
   // -------------------------------
   // ⚡ FRAME LOOP (AUDIO UPDATE)
   // -------------------------------
-  useFrame(({ clock }) => {
-    if (!CSMRef.current) return;
 
-    CSMRef.current.uniforms.uTime.value = clock.getElapsedTime();
+  useOnAudio((frequencyData, average) => {
+    if (!CSMRef.current || !textureRef.current || !textureRef.current.image.data) return;
 
-    if (!audioAnalyser || !dataRef.current || !textureRef.current) return;
+    textureRef.current.image.data.set(frequencyData);
+    textureRef.current.needsUpdate = true;
 
-    const data = dataRef.current;
-    const texture = textureRef.current;
-
-    // 🎧 get frequency data
-    audioAnalyser.getByteFrequencyData(data);
-
-    // 🚀 FASTEST WAY (no loop)
-    texture.image.data.set(data);
-
-    texture.needsUpdate = true;
-
-    const AudioAverage = data.reduce((a,v) => a + v/data.length/255,0);
-    CSMRef.current.uniforms.uAudioAverage.value = AudioAverage;
-    // CSMRef.current.uniforms.uAudioAverage.value = 1;
+    CSMRef.current.uniforms.uAudioAverage.value = average;
 
     if (!CSMRef.current.uniforms.uAudioTexture.value) {
-      CSMRef.current.uniforms.uAudioTexture.value = texture;
+      CSMRef.current.uniforms.uAudioTexture.value = textureRef.current;
     }
   });
 

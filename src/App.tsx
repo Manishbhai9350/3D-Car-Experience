@@ -8,6 +8,7 @@ import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
 import { Car } from "./components/car";
 import Floor from "./components/floor";
+import { AudioDriver } from "./context/audio/Audio.driver";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -28,14 +29,15 @@ const App = () => {
               y: 350,
             },
           }}
-        /> */}
-        <Canvas shadows camera={{ fov: 50, position: [0, 2, 0] }}>
+          /> */}
+        <Canvas shadows camera={{ fov: 50, position: [0, 2, 10] }}>
+          <AudioDriver analyser={analyser} />
           <Stats />
           <OrbitControls target={[-0.5, 1, 0]} makeDefault />
           <Floor />
           <Lights />
           {/* <Car /> */}
-          {/* <Tunnel audioAnalyser={analyser} /> */}
+          <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>
             <DepthOfField

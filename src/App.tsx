@@ -37,7 +37,7 @@ const App = () => {
           <Floor />
           <Lights />
           {/* <Car /> */}
-          <Tunnel audioAnalyser={analyser} />
+          {/* <Tunnel audioAnalyser={analyser} /> */}
 
           {/* <EffectComposer>
             <DepthOfField

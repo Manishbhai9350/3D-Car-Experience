@@ -25,6 +25,7 @@ class AudioBus {
   tick(delta: number) {
     if (!this.analyser || !this.data) return;
 
+
     this.analyser.getByteFrequencyData(this.data);
 
     let sum = 0;

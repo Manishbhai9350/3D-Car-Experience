@@ -1,6 +1,6 @@
 import { MeshReflectorMaterial, useTexture } from "@react-three/drei";
 import { useControls, folder } from "leva";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   DataTexture,
   MeshBasicMaterial,
@@ -11,6 +11,7 @@ import {
 import CSM from "three-custom-shader-material/vanilla";
 import CustomShaderMaterial from "three-custom-shader-material";
 import { useOnAudio } from "../../context/audio/audio.hook";
+import { CircleVertex, CircleFragment } from "./shaders/circle";
 
 const Floor = () => {
   const [normalMap, roughnessMap] = useTexture([
@@ -40,8 +41,6 @@ const Floor = () => {
     roughness,
     metalness,
     envMapIntensity,
-    // normalScaleX,
-    // normalScaleY,
     dithering,
     blurX,
     blurY,
@@ -97,9 +96,6 @@ const Floor = () => {
         <planeGeometry args={[25, 25]} />
         <MeshReflectorMaterial
           envMapIntensity={envMapIntensity}
-          // normalMap={normalMap}
-          // normalScale={[normalScaleX, normalScaleY]}
-          // roughnessMap={roughnessMap}
           dithering={dithering}
           color={color}
           roughness={roughness}
@@ -125,88 +121,53 @@ const Floor = () => {
   );
 };
 
-const CircleVertex = /* glsl */ `
-
-  varying vec2 vUv;
-
-  void main(){
-
-    vUv = uv;
-    
-  }
-`;
-const CircleFragment = /* glsl */ `
-
-  uniform sampler2D uAudioTexture;
-  varying vec2 vUv;
-
-  void main(){
-
-    vec2 centeredUV = vUv - vec2(.5);
-
-    float circle = length(centeredUV);
-    float smoothed = smoothstep(.5,.492,circle);
-
-    // Using tan() inverse to calculate the theta;
-    float angle = atan(centeredUV.y,centeredUV.x) + PI;
-
-    angle = angle / 2.0 / PI;
-
-    float AngleProg = angle;
-    
-    angle = fract(angle * 15.0);
-    
-    float gapFactor = .7;
-
-    
-    angle = step(angle,gapFactor);
-
-    angle *= 1. - step(length(centeredUV),.2);
-
-
-
-    csm_FragColor = vec4(smoothed);
-
-    csm_FragColor.rgb = vec3(angle);
-    csm_FragColor.a = min(step(length(centeredUV),.5),angle) * 0.0 + 1.0;
-
-    float audioIntensity = texture(uAudioTexture,vec2(AngleProg * .7)).r;
-
-    csm_FragColor.r = audioIntensity;
-
-    csm_FragColor.gb = vec2(0.0);
-
-
-  }
-`;
-
 export const CircleMaterial = () => {
   const csm = useRef<CSM<typeof MeshBasicMaterial>>(null);
-  const dataRef = useRef<Uint8Array | null>(null);
   const textureRef = useRef<DataTexture | null>(null);
 
-  // 🔥 you need an analyser reference to know frequencyBinCount.
-  // Simplest: pull it off the bus, or accept it as a prop like TunnelMaterial does.
-  useEffect(() => {
-    const size = 512; // match your analyser.fftSize / 2 (frequencyBinCount)
-    const data = new Uint8Array(size);
-    const texture = new DataTexture(data, 1, size, RedFormat);
+  const uniforms = useMemo(
+    () => ({
+      uTime: new Uniform(0),
+      uAudioTexture: new Uniform(null),
+      uAudioAverage: new Uniform(0),
+    }),
+    [],
+  );
+
+  const ensureTexture = (length: number) => {
+    if (
+      textureRef.current &&
+      textureRef.current.image.data &&
+      textureRef.current.image.data.length === length
+    ) {
+      return textureRef.current;
+    }
+
+    const data = new Uint8Array(length);
+    const texture = new DataTexture(data, 1, length, RedFormat);
+
+    // Critical: default UNPACK_ALIGNMENT is 4 bytes. With a 1-byte-wide
+    // single-channel row, the GPU misreads row boundaries unless told
+    // the data is tightly packed. Without this, parts of the buffer
+    // (often near the end) silently read as garbage/zero.
+    texture.unpackAlignment = 1;
     texture.needsUpdate = true;
 
-    dataRef.current = data;
     textureRef.current = texture;
-
     if (csm.current) {
       csm.current.uniforms.uAudioTexture.value = texture;
     }
-  }, []);
+    return texture;
+  };
 
   useOnAudio((frequencyData, average) => {
-    if (!csm.current || !textureRef.current || !textureRef.current.image.data)
-      return;
+    if (!csm.current) return;
 
-    textureRef.current.image.data.set(frequencyData);
-    textureRef.current.needsUpdate = true;
+    const texture = ensureTexture(frequencyData.length);
+    if(texture && texture.image.data){
+      texture.image.data.set(frequencyData);
+      texture.needsUpdate = true;
+    };
 
     csm.current.uniforms.uAudioAverage.value = average;
   });
@@ -217,11 +178,7 @@ export const CircleMaterial = () => {
       baseMaterial={MeshBasicMaterial}
       vertexShader={CircleVertex}
       fragmentShader={CircleFragment}
-      uniforms={{
-        uTime: new Uniform(0),
-        uAudioTexture: new Uniform(null),
-        uAudioAverage: new Uniform(0),
-      }}
+      uniforms={uniforms}
       transparent
     />
   );

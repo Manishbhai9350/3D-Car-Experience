@@ -2,6 +2,7 @@ import { MeshReflectorMaterial, useTexture } from "@react-three/drei";
 import { useControls, folder } from "leva";
 import { useEffect, useMemo, useRef } from "react";
 import {
+  Color,
   DataTexture,
   MeshBasicMaterial,
   RedFormat,
@@ -12,6 +13,7 @@ import CSM from "three-custom-shader-material/vanilla";
 import CustomShaderMaterial from "three-custom-shader-material";
 import { useOnAudio } from "../../context/audio/audio.hook";
 import { CircleVertex, CircleFragment } from "./shaders/circle";
+import { useCar } from "../../context/car/car.hook";
 
 const Floor = () => {
   const [normalMap, roughnessMap] = useTexture([
@@ -125,14 +127,25 @@ export const CircleMaterial = () => {
   const csm = useRef<CSM<typeof MeshBasicMaterial>>(null);
   const textureRef = useRef<DataTexture | null>(null);
 
+  const { colors, currentColorIndex } = useCar();
+
+  const InitialColor = colors[currentColorIndex];
+
   const uniforms = useMemo(
     () => ({
       uTime: new Uniform(0),
       uAudioTexture: new Uniform(null),
       uAudioAverage: new Uniform(0),
+      uColor: new Uniform(new Color(InitialColor.body)),
     }),
     [],
   );
+
+  useEffect(() => {
+    uniforms.uColor.value.lerp(colors[currentColorIndex].body, 1);
+
+    return () => {};
+  }, [colors, currentColorIndex, uniforms.uColor.value]);
 
   const ensureTexture = (length: number) => {
     if (
@@ -164,10 +177,10 @@ export const CircleMaterial = () => {
     if (!csm.current) return;
 
     const texture = ensureTexture(frequencyData.length);
-    if(texture && texture.image.data){
+    if (texture && texture.image.data) {
       texture.image.data.set(frequencyData);
       texture.needsUpdate = true;
-    };
+    }
 
     csm.current.uniforms.uAudioAverage.value = average;
   });

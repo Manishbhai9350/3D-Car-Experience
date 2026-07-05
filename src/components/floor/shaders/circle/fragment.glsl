@@ -1,6 +1,7 @@
 uniform sampler2D uAudioTexture;
 uniform float uAudioAverage;
 uniform float uTime;
+uniform vec3 uColor;
 
 varying vec2 vUv;
 
@@ -32,12 +33,15 @@ void main() {
     float bladeMask = bladeShape * isOutsideHub * outerMask;
 
     // --- Compose final color ---
-    vec3 color = vec3(bladeMask);
+    vec3 color = uColor;
+    if(color.x <= .1 && color.y <= .1 && color.z <= .1) {
+        color.xyz = vec3(.1);
+    }
     float alpha = bladeMask;
 
     csm_FragColor = vec4(color, alpha);
 
-    csm_FragColor = vec4(texture(uAudioTexture,vec2(0.0,vUv.x)).rr,1.0,1.0);
+    // csm_FragColor = vec4(texture(uAudioTexture,vec2(0.0,vUv.x)).rr,1.0,1.0);
 
     // csm_FragColor = vec4(vec3(bladeAudio),1.0);
 }

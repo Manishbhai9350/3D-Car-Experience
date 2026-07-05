@@ -1,3 +1,10 @@
+// Cheap deterministic hash: same bladeIndex always gives the same value
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
 
 // Angle around the circle, remapped from [-PI, PI] to [0, 1]
 float getAngle01(vec2 centeredUV) {
@@ -22,7 +29,7 @@ float getBladeShapeMask(float segmentProgress) {
 // Sample the audio texture for a specific blade index
 float getBladeAudio(float bladeIndex, float bladeCount) {
     float u = (bladeIndex + 0.5) / bladeCount; // sample the center of that bin
-    return texture(uAudioTexture, vec2(0.0,u)).r;
+    return texture(uAudioTexture, vec2(0.0, u)).r;
 }
 
 // Push a blade's outer radius in/out based on its audio value

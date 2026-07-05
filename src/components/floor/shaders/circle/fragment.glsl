@@ -1,19 +1,48 @@
 uniform sampler2D uAudioTexture;
 uniform float uAudioAverage;
 uniform float uTime;
-uniform vec3 uColor;
+uniform vec3 uColorFrom;
+uniform vec3 uColorTo;
+uniform float uColorProgress;
 
 varying vec2 vUv;
 
 // ---- Tunables -----------------------------------------------------------
-const float BLADE_COUNT = 15.0; // number of spokes around the circle
-const float GAP_FACTOR = 0.7;  // fraction of each segment that is "blade" vs gap
-const float OUTER_RADIUS = 0.5;  // max possible outer edge of a blade
-const float OUTER_SOFTEN = 0.492; // where the outer edge starts smoothing out
-const float INNER_RADIUS = 0.14;  // radius of the empty hub in the middle
+const float BLADE_COUNT = 15.0;
+const float GAP_FACTOR = 0.7;
+const float OUTER_RADIUS = 0.5;
+const float OUTER_SOFTEN = 0.492;
+const float INNER_RADIUS = 0.14;
+
+const float MAX_START_OFFSET = 0.5; // latest a blade can start, as fraction of timeline
+const float MIN_DURATION = 0.3;     // shortest a blade's own transition can take
+const float MAX_DURATION = 0.8;     // longest a blade's own transition can take
 // ---------------------------------------------------------------------
 
 #include ../includes/blade.utils.glsl
+
+vec3 clampMinBrightness(vec3 color, float minValue) {
+    if(color.x <= minValue && color.y <= minValue && color.z <= minValue) {
+        return vec3(minValue);
+    }
+    return color;
+}
+
+// Gives each blade its own start point + duration within the global
+// 0..1 progress, so blades start/end at different, randomized times.
+float getBladeColorProgress(float bladeIndex, float globalProgress) {
+    float startSeed = hash11(bladeIndex * 13.37);
+    float durationSeed = hash11(bladeIndex * 7.91 + 4.0);
+
+    float startOffset = startSeed * MAX_START_OFFSET;
+    float duration = mix(MIN_DURATION, MAX_DURATION, durationSeed);
+
+    // keep the blade's window from running past the end of the timeline
+    duration = min(duration, 1.0 - startOffset);
+
+    float localT = clamp((globalProgress - startOffset) / duration, 0.0, 1.0);
+    return smoothstep(0.0, 1.0, localT); // ease in/out instead of linear
+}
 
 void main() {
     vec2 centeredUV = vUv - vec2(0.5);
@@ -32,16 +61,12 @@ void main() {
 
     float bladeMask = bladeShape * isOutsideHub * outerMask;
 
-    // --- Compose final color ---
-    vec3 color = uColor;
-    if(color.x <= .1 && color.y <= .1 && color.z <= .1) {
-        color.xyz = vec3(.1);
-    }
+    // --- Compose final color, per-blade transition timing ---
+    float bladeProgress = getBladeColorProgress(bladeIndex, uColorProgress);
+    vec3 color = mix(uColorFrom, uColorTo, bladeProgress);
+    color = clampMinBrightness(color, 0.1);
+
     float alpha = bladeMask;
 
     csm_FragColor = vec4(color, alpha);
-
-    // csm_FragColor = vec4(texture(uAudioTexture,vec2(0.0,vUv.x)).rr,1.0,1.0);
-
-    // csm_FragColor = vec4(vec3(bladeAudio),1.0);
 }

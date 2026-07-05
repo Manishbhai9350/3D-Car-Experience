@@ -14,6 +14,7 @@ import CustomShaderMaterial from "three-custom-shader-material";
 import { useOnAudio } from "../../context/audio/audio.hook";
 import { CircleVertex, CircleFragment } from "./shaders/circle";
 import { useCar } from "../../context/car/car.hook";
+import { useFrame } from "@react-three/fiber";
 
 const Floor = () => {
   const [normalMap, roughnessMap] = useTexture([
@@ -128,7 +129,6 @@ export const CircleMaterial = () => {
   const textureRef = useRef<DataTexture | null>(null);
 
   const { colors, currentColorIndex } = useCar();
-
   const InitialColor = colors[currentColorIndex];
 
   const uniforms = useMemo(
@@ -136,16 +136,39 @@ export const CircleMaterial = () => {
       uTime: new Uniform(0),
       uAudioTexture: new Uniform(null),
       uAudioAverage: new Uniform(0),
-      uColor: new Uniform(new Color(InitialColor.body)),
+      uColorFrom: new Uniform(new Color(InitialColor.body)),
+      uColorTo: new Uniform(new Color(InitialColor.body)),
+      uColorProgress: new Uniform(1), // 1 = fully settled on uColorTo
     }),
     [],
   );
 
-  useEffect(() => {
-    uniforms.uColor.value.lerp(colors[currentColorIndex].body, 1);
+  const transitionDuration = 0.6; // seconds, tune to taste
 
-    return () => {};
-  }, [colors, currentColorIndex, uniforms.uColor.value]);
+  // Whenever the target color changes, snapshot where we currently
+  // are (the blended color) as the new "from", set the new "to",
+  // and reset progress to 0 so useFrame animates it back to 1.
+  useEffect(() => {
+    const currentBlend = uniforms.uColorFrom.value
+      .clone()
+      .lerp(uniforms.uColorTo.value, uniforms.uColorProgress.value);
+
+    uniforms.uColorFrom.value.copy(currentBlend);
+    uniforms.uColorTo.value.set(colors[currentColorIndex].body);
+    uniforms.uColorProgress.value = 0;
+  }, [colors, currentColorIndex]);
+
+  useFrame((_, delta) => {
+    if(uniforms.uTime) {
+      uniforms.uTime.value += delta;
+    }
+    if (uniforms.uColorProgress.value < 1) {
+      uniforms.uColorProgress.value = Math.min(
+        uniforms.uColorProgress.value + delta / transitionDuration,
+        1,
+      );
+    }
+  });
 
   const ensureTexture = (length: number) => {
     if (
@@ -158,11 +181,6 @@ export const CircleMaterial = () => {
 
     const data = new Uint8Array(length);
     const texture = new DataTexture(data, 1, length, RedFormat);
-
-    // Critical: default UNPACK_ALIGNMENT is 4 bytes. With a 1-byte-wide
-    // single-channel row, the GPU misreads row boundaries unless told
-    // the data is tightly packed. Without this, parts of the buffer
-    // (often near the end) silently read as garbage/zero.
     texture.unpackAlignment = 1;
     texture.needsUpdate = true;
 

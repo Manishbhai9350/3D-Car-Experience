@@ -12,7 +12,7 @@ const float BLADE_COUNT = 15.0;
 const float GAP_FACTOR = 0.7;
 const float OUTER_RADIUS = 0.5;
 const float OUTER_SOFTEN = 0.492;
-const float INNER_RADIUS = 0.14;
+const float INNER_RADIUS = 0.12;
 
 const float MAX_START_OFFSET = 0.5; // latest a blade can start, as fraction of timeline
 const float MIN_DURATION = 0.3;     // shortest a blade's own transition can take
@@ -46,6 +46,7 @@ float getBladeColorProgress(float bladeIndex, float globalProgress) {
 
 void main() {
     vec2 centeredUV = vUv - vec2(0.5);
+    centeredUV /= 2.0;
     float radius = length(centeredUV);
 
     float angle01 = getAngle01(centeredUV);
@@ -69,4 +70,6 @@ void main() {
     float alpha = bladeMask;
 
     csm_FragColor = vec4(color, alpha);
+
+    // csm_FragColor = vec4(vec3(.7,1.0,.4),1.0);
 }

@@ -128,7 +128,12 @@ export const TunnelMaterial = ({
   // -------------------------------
 
   useOnAudio((frequencyData, average) => {
-    if (!CSMRef.current || !textureRef.current || !textureRef.current.image.data) return;
+    if (
+      !CSMRef.current ||
+      !textureRef.current ||
+      !textureRef.current.image.data
+    )
+      return;
 
     textureRef.current.image.data.set(frequencyData);
     textureRef.current.needsUpdate = true;

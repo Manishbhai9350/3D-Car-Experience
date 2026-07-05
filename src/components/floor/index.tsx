@@ -14,7 +14,7 @@ import CustomShaderMaterial from "three-custom-shader-material";
 import { useOnAudio } from "../../context/audio/audio.hook";
 import { CircleVertex, CircleFragment } from "./shaders/circle";
 import { useCar } from "../../context/car/car.hook";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 
 const Floor = () => {
   const [normalMap, roughnessMap] = useTexture([
@@ -93,8 +93,11 @@ const Floor = () => {
     { collapsed: true },
   );
 
+  const v = useThree((v) => v.viewport);
+
   return (
     <group>
+      {/* <ScreenshotOnMount filename="rosette-pattern-icon.png" /> */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
         <planeGeometry args={[25, 25]} />
         <MeshReflectorMaterial
@@ -117,7 +120,7 @@ const Floor = () => {
         />
       </mesh>
       <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[5, 5]} />
+        <planeGeometry args={[3.22, v.height]} />
         <CircleMaterial />
       </mesh>
     </group>
@@ -159,7 +162,7 @@ export const CircleMaterial = () => {
   }, [colors, currentColorIndex]);
 
   useFrame((_, delta) => {
-    if(uniforms.uTime) {
+    if (uniforms.uTime) {
       uniforms.uTime.value += delta;
     }
     if (uniforms.uColorProgress.value < 1) {
@@ -213,6 +216,48 @@ export const CircleMaterial = () => {
       transparent
     />
   );
+};
+
+/**
+ * TEMPORARY DEBUG COMPONENT — capture a screenshot of the canvas
+ * a couple frames after mount, then trigger a download.
+ * Remove once you have the image you need.
+ */
+const ScreenshotOnMount = ({
+  filename = "screenshot.png",
+}: {
+  filename?: string;
+}) => {
+  const { gl } = useThree();
+  const hasCaptured = useRef(false);
+  const frameCount = useRef(0);
+
+  useFrame(() => {
+    if (hasCaptured.current) return;
+
+    frameCount.current += 1;
+
+    // Wait a few frames so textures/materials/audio data have settled
+    // in, rather than grabbing a half-initialized first frame.
+    if (frameCount.current < 10) return;
+
+    hasCaptured.current = true;
+
+    gl.domElement.toBlob((blob) => {
+      if (!blob) return;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, "image/png");
+  });
+
+  return null;
 };
 
 export default Floor;

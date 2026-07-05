@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import "./App.css";
-import { OrbitControls, Stats } from "@react-three/drei";
+import { OrbitControls, OrthographicCamera, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
 import CarProvider from "./context/car/car.provider";
@@ -9,6 +9,7 @@ import BGM from "./components/audio/bgm";
 import { Car } from "./components/car";
 import Floor from "./components/floor";
 import { AudioDriver } from "./context/audio/Audio.driver";
+import { Leva } from "leva";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -18,6 +19,7 @@ const App = () => {
 
   return (
     <CarProvider>
+      <Leva hidden />
       {dom}
       <main>
         <p className="audio-instruction">Double Click For Audio</p>
@@ -30,10 +32,17 @@ const App = () => {
             },
           }}
           /> */}
-        <Canvas shadows camera={{ fov: 50, position: [0, 2, 10] }}>
+        <Canvas shadows camera={{ fov: 50, position: [0, 3.5, 0] }}>
           <AudioDriver analyser={analyser} />
-          <Stats />
-          <OrbitControls target={[-0.5, 1, 0]} makeDefault />
+          {/* <Stats /> */}
+          {/* <orthographicCamera
+            left={-2}
+            top={2}
+            right={2}
+            bottom={-2}
+            position={[0, -100, 10]}
+            lookAt={[0, 0, 0]}
+          /> */}
           <Floor />
           <Lights />
           {/* <Car /> */}

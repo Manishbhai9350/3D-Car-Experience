@@ -69,7 +69,7 @@ void main() {
 
     float alpha = bladeMask;
 
-    csm_FragColor = vec4(color, alpha);
+    csm_FragColor = vec4(vec3(1.0), alpha);
 
     // csm_FragColor = vec4(vec3(.7,1.0,.4),1.0);
 }

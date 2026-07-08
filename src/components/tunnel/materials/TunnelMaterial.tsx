@@ -16,6 +16,7 @@ import { useCar } from "../../../context/car/car.hook";
 import { COLORS } from "../../../data.";
 import gsap from "gsap";
 import { useOnAudio } from "../../../context/audio/audio.hook";
+import { UseAudio } from "../../../context/audio/audio.context";
 
 const createUniforms = (initialYOffset: number, depth: number) => ({
   uTime: new Uniform(0),
@@ -47,6 +48,8 @@ export const TunnelMaterial = ({
   audioAnalyser,
 }: TunnelMaterialProps) => {
   const { currentColorIndex } = useCar();
+    const { played, setPlayed } = UseAudio();
+  
 
   const uniforms = useRef(createUniforms(initialYOffset, depth));
   const CSMRef = useRef<CSM<typeof MeshBasicMaterial>>(null);

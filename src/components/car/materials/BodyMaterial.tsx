@@ -7,6 +7,7 @@ import inkFragment1 from "../shaders/bodyshader/ink_transition_1.glsl";
 import gsap from "gsap";
 import { useRef, useEffect } from "react";
 import { useCar } from "../../../context/car/car.hook";
+import { UseAudio } from "../../../context/audio/audio.context";
 
 interface BodyMaterialProps {
   minY: number;

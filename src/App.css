@@ -73,23 +73,54 @@ main {
   }
 }
 
-.wheel {
+.buttons {
   position: absolute;
-  left: -100px;
-  top: -20px;
-  .radial {
-    opacity: 0.6;
-  }
+  top: 50px;
+  left: 30px;
+  z-index: 99999999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
-  .wheel-line {
-    width: 50px;
-    height: .7px;
-    background: rgba(209, 0, 0, 0.986);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-  }
+.wheel {
+  position: relative;
+}
+
+.button-line {
+  width: 50px;
+  height: 0.7px;
+  background: rgba(209, 0, 0, 0.986);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);
+  transition: all .2s ease-in;
+}
+
+.button {
+  cursor: pointer;
+  opacity: .5;
+  transition: all .3s ease-in;
+}
+
+.button.enabled .button-line {
+  transform: translate(-50%, -50%) rotate(-45deg) scaleX(0);
+}
+
+.button.enabled {
+  opacity: 1;
+}
+
+.sound {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
 }
 
 .audio-instruction {

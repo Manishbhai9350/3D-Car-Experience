@@ -6,7 +6,6 @@ import Tunnel from "./components/tunnel";
 import CarProvider from "./context/car/car.provider";
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
-import { Car } from "./components/car";
 import Floor from "./components/floor";
 import { AudioDriver } from "./context/audio/Audio.driver";
 import { Leva } from "leva";
@@ -18,7 +17,7 @@ const App = () => {
   const { analyser, dom } = BGM();
 
   return (
-    <CarProvider>
+    <>
       <Leva hidden />
       {dom}
       <main>
@@ -58,7 +57,7 @@ const App = () => {
           </EffectComposer> */}
         </Canvas>
       </main>
-    </CarProvider>
+    </>
   );
 };
 

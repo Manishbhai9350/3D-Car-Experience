@@ -4,6 +4,7 @@ uniform float uTime;
 uniform vec3 uColorFrom;
 uniform vec3 uColorTo;
 uniform float uColorProgress;
+uniform float uRadial;
 
 varying vec2 vUv;
 
@@ -56,7 +57,7 @@ void main() {
     float bladeShape = getBladeShapeMask(segmentProgress);
     float isOutsideHub = 1.0 - step(radius, INNER_RADIUS);
 
-    float bladeAudio = getBladeAudio(bladeIndex, BLADE_COUNT);
+    float bladeAudio = getBladeAudio(bladeIndex, BLADE_COUNT) * uRadial;
     float bladeOuter = getBladeOuterRadius(bladeAudio);
     float outerMask = getOuterEdgeMask(radius, bladeOuter);
 

@@ -15,6 +15,8 @@ import { useOnAudio } from "../../context/audio/audio.hook";
 import { CircleVertex, CircleFragment } from "./shaders/circle";
 import { useCar } from "../../context/car/car.hook";
 import { useFrame, useThree } from "@react-three/fiber";
+import { UseAudio } from "../../context/audio/audio.context";
+import gsap from "gsap";
 
 const Floor = () => {
   const [normalMap, roughnessMap] = useTexture([
@@ -131,6 +133,8 @@ export const CircleMaterial = () => {
   const csm = useRef<CSM<typeof MeshBasicMaterial>>(null);
   const textureRef = useRef<DataTexture | null>(null);
 
+  const { radial } = UseAudio();
+
   const { colors, currentColorIndex } = useCar();
   const InitialColor = colors[currentColorIndex];
 
@@ -142,6 +146,7 @@ export const CircleMaterial = () => {
       uColorFrom: new Uniform(new Color(InitialColor.body)),
       uColorTo: new Uniform(new Color(InitialColor.body)),
       uColorProgress: new Uniform(1), // 1 = fully settled on uColorTo
+      uRadial: new Uniform(0),
     }),
     [],
   );
@@ -160,6 +165,17 @@ export const CircleMaterial = () => {
     uniforms.uColorTo.value.set(colors[currentColorIndex].body);
     uniforms.uColorProgress.value = 0;
   }, [colors, currentColorIndex]);
+
+  useEffect(() => {
+    gsap.to(uniforms.uRadial, {
+      value: radial ? 1 : 0,
+    });
+    return () => {
+      gsap.to(uniforms.uRadial, {
+        value: 0,
+      });
+    };
+  }, [radial, uniforms.uRadial]);
 
   useFrame((_, delta) => {
     if (uniforms.uTime) {

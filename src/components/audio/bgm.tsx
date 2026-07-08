@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { UseAudio } from "../../context/audio/audio.context";
 
 const BGM = () => {
   const AudioRef = useRef<HTMLAudioElement>(null);
   const [Analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-  const [Played, setPlayed] = useState(false);
   const contextRef = useRef<AudioContext | null>(null);
+
+  const { played, setPlayed } = UseAudio();
 
   useEffect(() => {
     const audioContext = new window.AudioContext();
@@ -26,12 +28,10 @@ const BGM = () => {
   }, []);
 
   useEffect(() => {
-    const OnClick = async (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
+    const ToggleAudio = async () => {
       if (!AudioRef.current) return;
 
-      if (Played) {
+      if (!played) {
         // ✅ Unmute (important if you ever re-add muted)
         AudioRef.current.muted = true;
 
@@ -47,22 +47,19 @@ const BGM = () => {
         // ✅ Play
         await AudioRef.current.play();
       }
-
-      setPlayed((p) => !p);
     };
 
-    window.addEventListener("dblclick", OnClick);
+    ToggleAudio();
 
-    return () => {
-      window.removeEventListener("dblclick", OnClick);
-    };
-  }, [Played]);
+    return () => {};
+  }, [played, setPlayed]);
 
   return {
     dom: (
       <audio loop src="/audio/bg1.mp3" ref={AudioRef} crossOrigin="anonymous" />
     ),
     analyser: Analyser,
+    setPlayed,
   };
 };
 

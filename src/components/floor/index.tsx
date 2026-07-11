@@ -94,8 +94,12 @@ const Floor = () => {
     },
     { collapsed: true },
   );
+  const {gl} = useThree();
+  
+  useFrame(() => {
+    console.log(gl.info)
+  })
 
-  const v = useThree((v) => v.viewport);
 
   return (
     <group>
@@ -122,7 +126,7 @@ const Floor = () => {
         />
       </mesh>
       <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[3.22, v.height]} />
+        <planeGeometry args={[3.22, 3.22]} />
         <CircleMaterial />
       </mesh>
     </group>

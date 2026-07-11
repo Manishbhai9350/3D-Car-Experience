@@ -1,9 +1,9 @@
 import { Canvas } from "@react-three/fiber";
 import "./App.css";
-import { OrbitControls, OrthographicCamera, Stats } from "@react-three/drei";
+import { OrbitControls, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
-import CarProvider from "./context/car/car.provider";
+import Car from "./components/car"
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
 import Floor from "./components/floor";
@@ -21,7 +21,6 @@ const App = () => {
       <Leva hidden />
       {dom}
       <main>
-        <p className="audio-instruction">Double Click For Audio</p>
         <UI />
         {/* <Leva
           titleBar={{
@@ -31,21 +30,14 @@ const App = () => {
             },
           }}
           /> */}
-        <Canvas shadows camera={{ fov: 50, position: [0, 3.5, 0] }}>
+        <Canvas camera={{ fov: 50, position: [2,3,5] }}>
           <AudioDriver analyser={analyser} />
-          {/* <Stats /> */}
-          {/* <orthographicCamera
-            left={-2}
-            top={2}
-            right={2}
-            bottom={-2}
-            position={[0, -100, 10]}
-            lookAt={[0, 0, 0]}
-          /> */}
+          <Stats />
+          <OrbitControls />
           <Floor />
           <Lights />
-          {/* <Car /> */}
-          {/* <Tunnel audioAnalyser={analyser} /> */}
+          <Car />
+          <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>
             <DepthOfField

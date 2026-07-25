@@ -95,10 +95,6 @@ const Floor = () => {
     { collapsed: true },
   );
   const {gl} = useThree();
-  
-  useFrame(() => {
-    console.log(gl.info)
-  })
 
 
   return (

@@ -3,12 +3,13 @@ import "./App.css";
 import { OrbitControls, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
-import Car from "./components/car"
+import Car from "./components/car";
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
 import Floor from "./components/floor";
 import { AudioDriver } from "./context/audio/Audio.driver";
 import { Leva } from "leva";
+import Cube from "./components/cube";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -30,14 +31,15 @@ const App = () => {
             },
           }}
           /> */}
-        <Canvas camera={{ fov: 50, position: [2,3,5] }}>
+        <Canvas camera={{ fov: 50, position: [2, 3, 5] }}>
           <AudioDriver analyser={analyser} />
           <Stats />
           <OrbitControls />
           <Floor />
           <Lights />
-          <Car />
-          <Tunnel audioAnalyser={analyser} />
+          <Cube />
+          {/* <Car /> */}
+          {/* <Tunnel audioAnalyser={analyser} /> */}
 
           {/* <EffectComposer>
             <DepthOfField

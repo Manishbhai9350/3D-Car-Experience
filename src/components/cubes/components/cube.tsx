@@ -1,29 +1,29 @@
 import { useTexture } from "@react-three/drei";
-import { CircleFragmentCube, CircleVertexCube, createCubeWithPerFaceUVs } from "./utils/cube.utils";
+import { CircleFragmentCube, CircleVertexCube, createCubeWithPerFaceUVs } from "../utils/cube.utils";
 import CustomShaderMaterial from "three-custom-shader-material";
-import { Color, DataTexture, MeshBasicMaterial, RedFormat } from "three";
+import { Color, DataTexture, MeshStandardMaterial, RedFormat } from "three";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { Uniform } from "three";
-import { UseAudio } from "../../context/audio/audio.context";
-import { useCar } from "../../context/car/car.hook";
+import { UseAudio } from "../../../context/audio/audio.context";
+import { useCar } from "../../../context/car/car.hook";
 import CSM from "three-custom-shader-material/vanilla";
-import { useOnAudio } from "../../context/audio/audio.hook";
+import { useOnAudio } from "../../../context/audio/audio.hook";
 import gsap from "gsap";
 
-const Cube = () => {
+const Cube = ({ position,rotation = [0,0,0] }) => {
   
   return (
-    <mesh position={[0,.7,0]} geometry={createCubeWithPerFaceUVs()}>
-      <CircleMaterial />
+    <mesh position={position} rotation={rotation} geometry={createCubeWithPerFaceUVs()}>
+      <CubeMaterial />
     </mesh>
   );
 };
 
 
 
-export const CircleMaterial = () => {
-  const csm = useRef<CSM<typeof MeshBasicMaterial>>(null);
+export const CubeMaterial = () => {
+  const csm = useRef<CSM<typeof MeshStandardMaterial>>(null);
   const textureRef = useRef<DataTexture | null>(null);
 
   const meow = useTexture(
@@ -125,7 +125,9 @@ export const CircleMaterial = () => {
   return (
     <CustomShaderMaterial
       ref={csm}
-      baseMaterial={MeshBasicMaterial}
+      baseMaterial={MeshStandardMaterial}
+      metalness={0.5}
+      roughness={.5}
       vertexShader={CircleVertexCube}
       fragmentShader={CircleFragmentCube}
       uniforms={uniforms}

@@ -9,7 +9,7 @@ import BGM from "./components/audio/bgm";
 import Floor from "./components/floor";
 import { AudioDriver } from "./context/audio/Audio.driver";
 import { Leva } from "leva";
-import Cube from "./components/cube";
+import Cubes from "./components/cubes";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -37,9 +37,9 @@ const App = () => {
           <OrbitControls />
           <Floor />
           <Lights />
-          <Cube />
+          <Cubes />
           {/* <Car /> */}
-          {/* <Tunnel audioAnalyser={analyser} /> */}
+          <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>
             <DepthOfField

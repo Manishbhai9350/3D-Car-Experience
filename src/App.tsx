@@ -10,6 +10,8 @@ import Floor from "./components/floor";
 import { AudioDriver } from "./context/audio/Audio.driver";
 import { Leva } from "leva";
 import Cubes from "./components/cubes";
+import { useEffect, useState } from "react";
+import gsap from "gsap";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -17,12 +19,32 @@ import Cubes from "./components/cubes";
 const App = () => {
   const { analyser, dom } = BGM();
 
+  const [Overlay, setOverlay] = useState(true);
+
+  useEffect(() => {
+    
+
+    gsap.to('.overlay',{
+      delay:4,
+      scaleY:0,
+      onComplete(){
+        setOverlay(false)
+      }
+    })
+  
+    return () => {
+      
+    }
+  }, [])
+  
+
   return (
     <>
       <Leva hidden />
       {dom}
       <main>
-        <UI />
+        {Overlay && <OverlayComponent />}
+        {!Overlay && <UI />}
         {/* <Leva
           titleBar={{
             position: {
@@ -54,5 +76,13 @@ const App = () => {
     </>
   );
 };
+
+
+const OverlayComponent = () => {
+  return <div>
+    <div className="overlay top-overlay"></div>
+    <div className="overlay bottom-overlay"></div>
+  </div>
+}
 
 export default App;

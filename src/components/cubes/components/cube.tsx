@@ -12,9 +12,25 @@ import { useOnAudio } from "../../../context/audio/audio.hook";
 import gsap from "gsap";
 
 const Cube = ({ position,rotation = [0,0,0] }) => {
+
+  const CubeRef = useRef();
+
+  useFrame(({ clock }, dt) => {
+  if (!CubeRef.current || !CubeRef.current.position) return;
+
+  const speed = 3.3;
+  const MaxDeltaZ = 30;
+
+  CubeRef.current.position.z -= speed * dt;
+
+  // If it goes below -15, reset back to 15
+  if (CubeRef.current.position.z < -MaxDeltaZ) {
+    CubeRef.current.position.z = MaxDeltaZ;
+  }
+});
   
   return (
-    <mesh position={position} rotation={rotation} geometry={createCubeWithPerFaceUVs()}>
+    <mesh ref={CubeRef} position={position} rotation={rotation} geometry={createCubeWithPerFaceUVs()}>
       <CubeMaterial />
     </mesh>
   );

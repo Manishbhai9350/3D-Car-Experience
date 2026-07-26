@@ -135,3 +135,21 @@ main {
   color: rgb(205, 205, 205);
   /* mix-blend-mode: difference; */
 }
+
+.overlay {
+  width: 100vw;
+  height: 30px;
+  background: #000;
+  position: absolute;
+  z-index: 99;
+}
+
+.top-overlay {
+  top: 0;
+  transform-origin: top;
+}
+
+.bottom-overlay {
+  bottom: 0;
+  transform-origin: bottom;
+}

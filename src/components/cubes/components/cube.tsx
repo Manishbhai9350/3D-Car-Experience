@@ -18,7 +18,7 @@ const Cube = ({ position,rotation = [0,0,0] }) => {
   useFrame(({ clock }, dt) => {
   if (!CubeRef.current || !CubeRef.current.position) return;
 
-  const speed = 3.3;
+  const speed = 4.3;
   const MaxDeltaZ = 30;
 
   CubeRef.current.position.z -= speed * dt;

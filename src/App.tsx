@@ -34,32 +34,32 @@ const App = () => {
     return () => {};
   }, []);
 
-  const { bokehScale, focalLength, focusDistance, height } = useControls({
-    focusDistance: {
-      min: 0,
-      max: 30,
-      value: 16,
-    },
-    focalLength: {
-      min: 0,
-      max: 30,
-      value: 21,
-    },
-    bokehScale: {
-      min: 0,
-      max: 30,
-      value: 1.5,
-    },
-    height: {
-      min: 0,
-      max: 30,
-      value: 30,
-    },
-  });
+  // const { bokehScale, focalLength, focusDistance, height } = useControls({
+  //   focusDistance: {
+  //     min: 0,
+  //     max: 30,
+  //     value: 16,
+  //   },
+  //   focalLength: {
+  //     min: 0,
+  //     max: 30,
+  //     value: 21,
+  //   },
+  //   bokehScale: {
+  //     min: 0,
+  //     max: 30,
+  //     value: 1.5,
+  //   },
+  //   height: {
+  //     min: 0,
+  //     max: 30,
+  //     value: 30,
+  //   },
+  // });
 
   return (
     <>
-      <Leva />
+      <Leva hidden />
       {dom}
       <main>
         {Overlay && <OverlayComponent />}
@@ -82,14 +82,14 @@ const App = () => {
           {/* <Car /> */}
           <Tunnel audioAnalyser={analyser} />
 
-          <EffectComposer>
+          {/* <EffectComposer>
             <DepthOfField
               focusDistance={focusDistance} // normalized — 0 = camera near, focus on car
               focalLength={focalLength} // shorter = tighter focus range
               bokehScale={bokehScale} // size of bokeh circles on blurred areas
               height={height} // resolution — lower = softer/cheaper bokeh
             />
-          </EffectComposer>
+          </EffectComposer> */}
         </Canvas>
       </main>
     </>

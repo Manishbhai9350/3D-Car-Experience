@@ -1,7 +1,15 @@
-import { useTexture } from "@react-three/drei";
-import { CircleFragmentCube, CircleVertexCube, createCubeWithPerFaceUVs } from "../utils/cube.utils";
+import {
+  CircleFragmentCube,
+  CircleVertexCube,
+  createCubeWithPerFaceUVs,
+} from "../utils/cube.utils";
 import CustomShaderMaterial from "three-custom-shader-material";
-import { Color, DataTexture, MeshStandardMaterial, RedFormat } from "three";
+import {
+  Color,
+  DataTexture,
+  MeshStandardMaterial,
+  RedFormat,
+} from "three";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { Uniform } from "three";
@@ -11,41 +19,26 @@ import CSM from "three-custom-shader-material/vanilla";
 import { useOnAudio } from "../../../context/audio/audio.hook";
 import gsap from "gsap";
 
-const Cube = ({ position,rotation = [0,0,0] }) => {
+interface CubeProps {
+  position: [number, number, number];
+  rotation: [number, number, number];
+}
 
-  const CubeRef = useRef();
-
-  useFrame(({ clock }, dt) => {
-  if (!CubeRef.current || !CubeRef.current.position) return;
-
-  const speed = 4.3;
-  const MaxDeltaZ = 30;
-
-  CubeRef.current.position.z -= speed * dt;
-
-  // If it goes below -15, reset back to 15
-  if (CubeRef.current.position.z < -MaxDeltaZ) {
-    CubeRef.current.position.z = MaxDeltaZ;
-  }
-});
-  
+const Cube = ({ position, rotation }: CubeProps) => {
   return (
-    <mesh ref={CubeRef} position={position} rotation={rotation} geometry={createCubeWithPerFaceUVs()}>
+    <mesh
+      position={position}
+      rotation={rotation}
+      geometry={createCubeWithPerFaceUVs()}
+    >
       <CubeMaterial />
     </mesh>
   );
 };
 
-
-
 export const CubeMaterial = () => {
   const csm = useRef<CSM<typeof MeshStandardMaterial>>(null);
   const textureRef = useRef<DataTexture | null>(null);
-
-  const meow = useTexture(
-    "https://imgs.search.brave.com/e0_9sQwxONrYIpvb3YYsTaPhDKBpEcxMlTcVGeLVIlI/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy83/Lzc3L0tpdHR5X01l/b3dfTWVvdy5KUEc",
-  );
-
 
   const { radial } = UseAudio();
 
@@ -61,13 +54,12 @@ export const CubeMaterial = () => {
       uColorTo: new Uniform(new Color(InitialColor.body)),
       uColorProgress: new Uniform(1), // 1 = fully settled on uColorTo
       uRadial: new Uniform(0),
-      meow: new Uniform(null)
+      meow: new Uniform(null),
     }),
     [],
   );
 
   const transitionDuration = 0.6; // seconds, tune to taste
-  
 
   // Whenever the target color changes, snapshot where we currently
   // are (the blended color) as the new "from", set the new "to",
@@ -143,7 +135,7 @@ export const CubeMaterial = () => {
       ref={csm}
       baseMaterial={MeshStandardMaterial}
       metalness={0.5}
-      roughness={.5}
+      roughness={0.5}
       vertexShader={CircleVertexCube}
       fragmentShader={CircleFragmentCube}
       uniforms={uniforms}

@@ -7,6 +7,7 @@
 html,
 body {
   overflow: hidden;
+  cursor: grab;
 }
 
 main {
@@ -96,13 +97,13 @@ main {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);
-  transition: all .2s ease-in;
+  transition: all 0.2s ease-in;
 }
 
 .button {
   cursor: pointer;
-  opacity: .5;
-  transition: all .3s ease-in;
+  opacity: 0.5;
+  transition: all 0.3s ease-in;
 }
 
 .button.enabled .button-line {
@@ -147,9 +148,11 @@ main {
 .top-overlay {
   top: 0;
   transform-origin: top;
+  transform: scaleY(calc(50vh / 30px));
 }
 
 .bottom-overlay {
   bottom: 0;
   transform-origin: bottom;
+  transform: scaleY(calc(50vh / 30px));
 }

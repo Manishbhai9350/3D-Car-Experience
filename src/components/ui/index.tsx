@@ -1,13 +1,41 @@
-import React from "react";
+import { useEffect, useRef } from "react";
 import { useCar } from "../../context/car/car.hook";
 import RadialWheel from "./wheel";
 import { UseAudio } from "../../context/audio/audio.context";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 
-const UI = () => {
+const UI = ({ visible = false }: { visible: boolean }) => {
+  const ButtonsRef = useRef(null);
+  const UIRef = useRef(null);
+
   const { colors, currentColorIndex, isAnimatingRef, setCurrentColorIndex } =
     useCar();
 
   const { played, setPlayed, radial, setRadial } = UseAudio();
+
+  useEffect(() => {
+    if (!ButtonsRef.current || !UIRef.current) return;
+
+    if (visible) {
+      gsap.to([ButtonsRef.current, UIRef.current], {
+        opacity: 1,
+      });
+    } else {
+      gsap.to([ButtonsRef.current, UIRef.current], {
+        opacity: 0,
+      });
+    }
+
+    return () => {};
+  }, [visible]);
+
+  useGSAP(() => {
+    if (!ButtonsRef.current || !UIRef.current) return;
+    gsap.set([ButtonsRef.current, UIRef.current], {
+      opacity: 0,
+    });
+  });
 
   function HandleClick(index: number) {
     if (isAnimatingRef?.current) return;
@@ -16,7 +44,7 @@ const UI = () => {
   }
   return (
     <>
-      <div className="buttons">
+      <div ref={ButtonsRef} className="buttons">
         <div
           onClick={() => {
             if (played) {
@@ -53,7 +81,7 @@ const UI = () => {
           </svg>
         </div>
       </div>
-      <div className="ui">
+      <div ref={UIRef} className="ui">
         <div className="colors">
           <div className="progress">
             <div className="line color-progress-line"></div>

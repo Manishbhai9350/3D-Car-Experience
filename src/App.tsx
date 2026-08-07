@@ -3,16 +3,21 @@ import "./App.css";
 import { OrbitControls, Stats } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
-import Car from "./components/car";
 import UI from "./components/ui";
 import BGM from "./components/audio/bgm";
 import Floor from "./components/floor";
 import { AudioDriver } from "./context/audio/Audio.driver";
-import { Leva, useControls } from "leva";
+import { Leva } from "leva";
 import Cubes from "./components/cubes";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import gsap from "gsap";
-import { DepthOfField, EffectComposer } from "@react-three/postprocessing";
+import { useGSAP } from "@gsap/react";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -24,7 +29,7 @@ const App = () => {
 
   useEffect(() => {
     gsap.to(".overlay", {
-      delay: 4,
+      delay: 0,
       scaleY: 0,
       onComplete() {
         setOverlay(false);
@@ -62,8 +67,8 @@ const App = () => {
       <Leva hidden />
       {dom}
       <main>
-        {Overlay && <OverlayComponent />}
-        {!Overlay && <UI />}
+        <OverlayComponent overlay={Overlay} setOverlay={setOverlay} />
+        <UI visible={!Overlay} />
         {/* <Leva
           titleBar={{
             position: {
@@ -96,11 +101,61 @@ const App = () => {
   );
 };
 
-const OverlayComponent = () => {
+const OverlayComponent = ({
+  overlay = false,
+  setOverlay = () => {},
+}: {
+  overlay: boolean;
+  setOverlay: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const TopRef = useRef(null);
+  const BottomRef = useRef(null);
+  const TimeOutID = useRef(0);
+
+  useGSAP(() => {
+    if (!TopRef.current || !BottomRef.current || !overlay) return;
+
+    const OnMouseDown = () => {
+      clearTimeout(TimeOutID.current);
+      document.body.style.cursor = "grabbing";
+
+      TimeOutID.current = setTimeout(() => {
+        setOverlay(true);
+      }, 200);
+    };
+    const OnMouseUP = () => {
+      clearTimeout(TimeOutID.current);
+      document.body.style.cursor = "grab";
+      setOverlay(false);
+    };
+
+    window.addEventListener("mousedown", OnMouseDown);
+    window.addEventListener("mouseup", OnMouseUP);
+
+    return () => {
+      window.removeEventListener("mousedown", OnMouseDown);
+      window.removeEventListener("mouseup", OnMouseUP);
+    };
+  }, [overlay]);
+
+  useEffect(() => {
+    if (overlay) {
+      gsap.to([TopRef.current, BottomRef.current], {
+        scaleY: 1,
+      });
+    } else {
+      gsap.to([TopRef.current, BottomRef.current], {
+        scaleY: 0,
+      });
+    }
+
+    return () => {};
+  }, [overlay]);
+
   return (
     <div>
-      <div className="overlay top-overlay"></div>
-      <div className="overlay bottom-overlay"></div>
+      <div ref={TopRef} className="overlay top-overlay"></div>
+      <div ref={BottomRef} className="overlay bottom-overlay"></div>
     </div>
   );
 };

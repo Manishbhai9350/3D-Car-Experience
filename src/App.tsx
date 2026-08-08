@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import "./App.css";
-import { OrbitControls, Stats } from "@react-three/drei";
+import { Stats } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
 import UI from "./components/ui";
@@ -18,6 +18,8 @@ import {
 } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import CameraMovement from "./components/camera/CameraMove";
+import Car from "./components/car";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -79,12 +81,12 @@ const App = () => {
           /> */}
         <Canvas camera={{ fov: 50, position: [2, 3, 5] }}>
           <AudioDriver analyser={analyser} />
-          <Stats />
-          <OrbitControls />
+          {/* <Stats /> */}
+          <CameraMovement overlay={Overlay} />
           <Floor />
           <Lights />
           <Cubes />
-          {/* <Car /> */}
+          <Car />
           <Tunnel audioAnalyser={analyser} />
 
           {/* <EffectComposer>

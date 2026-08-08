@@ -26,10 +26,6 @@ const UI = ({ visible = false }: { visible: boolean }) => {
         opacity: 0,
       });
     }
-    gsap.to([ButtonsRef.current], {
-      opacity: 0,
-    });
-
     return () => {};
   }, [visible]);
 

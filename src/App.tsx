@@ -81,7 +81,7 @@ const App = () => {
           /> */}
         <Canvas camera={{ fov: 50, position: [2, 3, 5] }}>
           <AudioDriver analyser={analyser} />
-          {/* <Stats /> */}
+          <Stats />
           <CameraMovement overlay={Overlay} />
           <Floor />
           <Lights />

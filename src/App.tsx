@@ -11,6 +11,7 @@ import { Leva } from "leva";
 import Cubes from "./components/cubes";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -20,6 +21,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import CameraMovement from "./components/camera/CameraMove";
 import Car from "./components/car";
+import useWindow from "./hooks/useWindow";
 
 // position: [2, 3, 5]
 // [0, 2, 10]
@@ -114,6 +116,13 @@ const OverlayComponent = ({
   const BottomRef = useRef(null);
   const TimeOutID = useRef(0);
 
+  const { size } = useWindow();
+
+  const OverlayHeight = useMemo(
+    () => (size.width < 900 ? 40 : 50),
+    [size.width],
+  );
+
   useGSAP(() => {
     if (!TopRef.current || !BottomRef.current || !overlay) return;
 
@@ -143,16 +152,18 @@ const OverlayComponent = ({
   useEffect(() => {
     if (overlay) {
       gsap.to([TopRef.current, BottomRef.current], {
+        height: OverlayHeight,
         scaleY: 1,
       });
     } else {
       gsap.to([TopRef.current, BottomRef.current], {
+        height: OverlayHeight,
         scaleY: 0,
       });
     }
 
     return () => {};
-  }, [overlay]);
+  }, [overlay, OverlayHeight]);
 
   return (
     <div>

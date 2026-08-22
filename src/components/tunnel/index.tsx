@@ -5,7 +5,7 @@ import CSM from "three-custom-shader-material/vanilla";
 import { TunnelMaterial } from "./materials/TunnelMaterial";
 
 // ---- Constants ----
-const RADIUS = 8;
+const RADIUS = 7;
 const DEPTH = 80;
 const SCROLL_SPEED = 0.1;
 

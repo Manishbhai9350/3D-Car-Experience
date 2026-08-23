@@ -139,7 +139,7 @@ main {
 
 .overlay {
   width: 100vw;
-  height: 30px;
+  height: 50%;
   background: #000;
   position: absolute;
   z-index: 99;
@@ -148,11 +148,26 @@ main {
 .top-overlay {
   top: 0;
   transform-origin: top;
-  transform: scaleY(calc(50vh / 30px));
 }
 
 .bottom-overlay {
   bottom: 0;
   transform-origin: bottom;
-  transform: scaleY(calc(50vh / 30px));
+}
+
+.progres-bar {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.progres-bar .bar {
+  height: 2px;
+  background: white;
+  border-radius: 50px;
+  top: 50%;
+  left: 50%;
 }

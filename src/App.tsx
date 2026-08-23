@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import "./App.css";
-import { Progress, Stats, useProgress } from "@react-three/drei";
+import { Stats, useProgress } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
 import UI from "./components/ui";

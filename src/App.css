@@ -142,7 +142,7 @@ main {
   height: 50%;
   background: #000;
   position: absolute;
-  z-index: 99;
+  z-index: 99999;
 }
 
 .top-overlay {

@@ -98,7 +98,7 @@ const App = () => {
             <Floor />
             <Lights />
             <Cubes />
-            <Car />
+            {/* <Car /> */}
             <Tunnel audioAnalyser={analyser} />
 
             {/* <EffectComposer>
@@ -128,7 +128,9 @@ const OverlayComponent = ({
   const TopRef = useRef(null);
   const BottomRef = useRef(null);
   const TimeOutID = useRef(0);
-  const BarRef = useRef<(HTMLDivElement | null)[]>([]);
+  const BarRef = useRef<HTMLDivElement[]>([]);
+  const HasLoaded = useRef(false);
+  const HasOnceLoadedDone = useRef(false);
 
   const { size } = useWindow();
 
@@ -137,18 +139,36 @@ const OverlayComponent = ({
     [size.width, loaded],
   );
 
+  useEffect(() => {
+    if (loaded && HasLoaded.current) {
+      HasOnceLoadedDone.current = true;
+    }
+    if (loaded) {
+      HasLoaded.current = true;
+      return;
+    }
+
+    return () => {};
+  }, [loaded, overlay]);
+
   useGSAP(() => {
     if (!TopRef.current || !BottomRef.current || !overlay) return;
 
     const OnMouseDown = () => {
       clearTimeout(TimeOutID.current);
 
+      gsap.set(".buttons", {
+        pointerEvents: "none",
+      });
       document.body.style.cursor = "grabbing";
       TimeOutID.current = setTimeout(() => {
         setOverlay(true);
       }, 200);
     };
     const OnMouseUP = () => {
+      gsap.set(".buttons", {
+        pointerEvents: "all",
+      });
       document.body.style.cursor = "grab";
       clearTimeout(TimeOutID.current);
       setOverlay(false);
@@ -170,6 +190,7 @@ const OverlayComponent = ({
       });
     } else {
       gsap.to([TopRef.current, BottomRef.current], {
+        delay: HasOnceLoadedDone.current ? 0 : 0.3,
         height: 0,
       });
     }
@@ -187,6 +208,7 @@ const OverlayComponent = ({
     BarRef.current.forEach((el, i) => {
       const Prog = i / BARS;
       const Active = progress > Prog * 100;
+      console.log(Active);
       gsap.to(el, {
         opacity: loaded ? 0 : Active ? 1 : 0.3,
       });
@@ -208,11 +230,15 @@ const OverlayComponent = ({
 
             return (
               <div
-                ref={(el) => (BarRef.current[i] = el)}
+                ref={(el) => {
+                  if (el) {
+                    return (BarRef.current[i] = el);
+                  }
+                }}
                 className="bar"
                 key={i}
                 style={{
-                  opacity: 0.3,
+                  opacity: 1,
                   width: WIDTH,
                   position: "absolute",
                   transform: `translate(${PX}px,${PY}px) rotate(${Theta}rad)`,

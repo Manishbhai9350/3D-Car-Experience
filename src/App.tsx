@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import "./App.css";
-import { Stats, useProgress } from "@react-three/drei";
+import { useProgress } from "@react-three/drei";
 import Lights from "./components/lights";
 import Tunnel from "./components/tunnel";
 import UI from "./components/ui";
@@ -11,15 +11,11 @@ import { Leva } from "leva";
 import Cubes from "./components/cubes";
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import useWindow from "./hooks/useWindow";
 import Car from "./components/car";
 import CameraMovement from "./components/camera/CameraMove";
 
@@ -47,156 +43,47 @@ const App = () => {
 
     return () => {};
   }, [progress]);
+const CanvasRef = useRef<HTMLCanvasElement>(null);
 
-  // const { bokehScale, focalLength, focusDistance, height } = useControls({
-  //   focusDistance: {
-  //     min: 0,
-  //     max: 30,
-  //     value: 16,
-  //   },
-  //   focalLength: {
-  //     min: 0,
-  //     max: 30,
-  //     value: 21,
-  //   },
-  //   bokehScale: {
-  //     min: 0,
-  //     max: 30,
-  //     value: 1.5,
-  //   },
-  //   height: {
-  //     min: 0,
-  //     max: 30,
-  //     value: 30,
-  //   },
-  // });
+return (
+  <>
+    <Leva hidden />
+    {dom}
 
-  return (
-    <>
-      <Leva hidden />
-      {dom}
+    <main>
+      <UI visible={!Overlay} />
+
       <OverlayComponent
         loaded={Loaded}
         overlay={Overlay}
         setOverlay={setOverlay}
       />
-      {true && (
-        <main>
-          <UI visible={!Overlay} />
-          {/* <Leva
-          titleBar={{
-            position: {
-              x: -100,
-              y: 350,
-            },
-          }}
-          /> */}
-          <Canvas camera={{ fov: 50, position: [2, 3, 5] }}>
-            <AudioDriver analyser={analyser} />
-            <Stats />
-            <CameraMovement overlay={Overlay} />
-            <Floor />
-            <Lights />
-            <Cubes />
-            {/* <Car /> */}
-            <Tunnel audioAnalyser={analyser} />
 
-            {/* <EffectComposer>
-            <DepthOfField
-              focusDistance={focusDistance} // normalized — 0 = camera near, focus on car
-              focalLength={focalLength} // shorter = tighter focus range
-              bokehScale={bokehScale} // size of bokeh circles on blurred areas
-              height={height} // resolution — lower = softer/cheaper bokeh
-            />
-          </EffectComposer> */}
-          </Canvas>
-        </main>
-      )}
-    </>
-  );
+      <Canvas
+        ref={CanvasRef}
+        camera={{ fov: 50, position: [1, 2, 6] }}
+      >
+        <AudioDriver analyser={analyser} />
+        <CameraMovement overlay={Overlay} />
+        <Floor />
+        <Lights />
+        <Cubes />
+        <Car />
+        <Tunnel audioAnalyser={analyser} />
+      </Canvas>
+    </main>
+  </>
+);
 };
 
 const OverlayComponent = ({
   loaded = false,
-  overlay = false,
-  setOverlay = () => {},
 }: {
   loaded: boolean;
-  overlay: boolean;
-  setOverlay: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const TopRef = useRef(null);
-  const BottomRef = useRef(null);
-  const TimeOutID = useRef(0);
+  const TopRef = useRef<HTMLDivElement>(null);
+  const BottomRef = useRef<HTMLDivElement>(null);
   const BarRef = useRef<HTMLDivElement[]>([]);
-  const HasLoaded = useRef(false);
-  const HasOnceLoadedDone = useRef(false);
-
-  const { size } = useWindow();
-
-  const OverlayHeight = useMemo(
-    () => (!loaded ? innerHeight / 2 : size.width < 900 ? 40 : 50),
-    [size.width, loaded],
-  );
-
-  useEffect(() => {
-    if (loaded && HasLoaded.current) {
-      HasOnceLoadedDone.current = true;
-    }
-    if (loaded) {
-      HasLoaded.current = true;
-      return;
-    }
-
-    return () => {};
-  }, [loaded, overlay]);
-
-  useGSAP(() => {
-    if (!TopRef.current || !BottomRef.current || !overlay) return;
-
-    const OnMouseDown = () => {
-      clearTimeout(TimeOutID.current);
-
-      gsap.set(".buttons", {
-        pointerEvents: "none",
-      });
-      document.body.style.cursor = "grabbing";
-      TimeOutID.current = setTimeout(() => {
-        setOverlay(true);
-      }, 200);
-    };
-    const OnMouseUP = () => {
-      gsap.set(".buttons", {
-        pointerEvents: "all",
-      });
-      document.body.style.cursor = "grab";
-      clearTimeout(TimeOutID.current);
-      setOverlay(false);
-    };
-
-    window.addEventListener("mousedown", OnMouseDown);
-    window.addEventListener("mouseup", OnMouseUP);
-
-    return () => {
-      window.removeEventListener("mousedown", OnMouseDown);
-      window.removeEventListener("mouseup", OnMouseUP);
-    };
-  }, [overlay, loaded]);
-
-  useEffect(() => {
-    if (overlay) {
-      gsap.to([TopRef.current, BottomRef.current], {
-        height: OverlayHeight,
-      });
-    } else {
-      gsap.to([TopRef.current, BottomRef.current], {
-        delay: HasOnceLoadedDone.current ? 0 : 0.3,
-        height: 0,
-      });
-    }
-
-    return () => {};
-  }, [overlay, OverlayHeight]);
 
   const { progress } = useProgress();
 
@@ -204,53 +91,76 @@ const OverlayComponent = ({
   const RADIUS = 30;
   const WIDTH = 25;
 
+  // Animate loading bars
   useGSAP(() => {
     BarRef.current.forEach((el, i) => {
-      const Prog = i / BARS;
-      const Active = progress > Prog * 100;
-      console.log(Active);
+      if (!el) return;
+
+      const threshold = (i / BARS) * 100;
+      const active = progress >= threshold;
+
       gsap.to(el, {
-        opacity: loaded ? 0 : Active ? 1 : 0.3,
+        opacity: loaded ? 0 : active ? 1 : 0.3,
+        duration: 0.2,
+        ease: "power2.out",
       });
     });
-
-    return () => {};
   }, [progress, loaded]);
 
+  // Open loader when loading is finished
+  useGSAP(() => {
+    if (!loaded) return;
+    if (!TopRef.current || !BottomRef.current) return;
+
+    gsap.to([TopRef.current, BottomRef.current], {
+      height: 0,
+      duration: 1,
+      ease: "power4.inOut",
+    });
+  }, [loaded]);
+
   return (
-    <div>
-      {
-        <div className="progres-bar">
-          {new Array(BARS).fill("_").map((_, i) => {
-            const ThetaPerBar = (2 * Math.PI) / BARS;
-            const Theta = ThetaPerBar * i - Math.PI / 2;
+    <>
+      {/* Loading indicator */}
+      <div className="progres-bar">
+        {new Array(BARS).fill(null).map((_, i) => {
+          const thetaPerBar = (2 * Math.PI) / BARS;
+          const theta = thetaPerBar * i - Math.PI / 2;
 
-            const PX = Math.cos(Theta) * RADIUS - WIDTH / 2;
-            const PY = Math.sin(Theta) * RADIUS;
+          const px = Math.cos(theta) * RADIUS - WIDTH / 2;
+          const py = Math.sin(theta) * RADIUS;
 
-            return (
-              <div
-                ref={(el) => {
-                  if (el) {
-                    return (BarRef.current[i] = el);
-                  }
-                }}
-                className="bar"
-                key={i}
-                style={{
-                  opacity: 1,
-                  width: WIDTH,
-                  position: "absolute",
-                  transform: `translate(${PX}px,${PY}px) rotate(${Theta}rad)`,
-                }}
-              ></div>
-            );
-          })}
-        </div>
-      }
-      <div ref={TopRef} className="overlay top-overlay"></div>
-      <div ref={BottomRef} className="overlay bottom-overlay"></div>
-    </div>
+          return (
+            <div
+              ref={(el) => {
+                if (el) {
+                  BarRef.current[i] = el;
+                }
+              }}
+              className="bar"
+              key={i}
+              style={{
+                opacity: 0.3,
+                width: WIDTH,
+                position: "absolute",
+                transform: `translate(${px}px, ${py}px) rotate(${theta}rad)`,
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* Black loading screen */}
+      <div
+        ref={TopRef}
+        className="overlay top-overlay"
+      />
+
+      <div
+        ref={BottomRef}
+        className="overlay bottom-overlay"
+      />
+    </>
   );
 };
 

@@ -7,6 +7,17 @@
 html,
 body {
   overflow: hidden;
+}
+
+canvas {
+  cursor: grab;
+}
+
+canvas:active {
+  cursor: grabbing;
+}
+
+.scene {
   cursor: grab;
 }
 
@@ -76,11 +87,12 @@ main {
 
 .buttons {
   position: absolute;
-  top: 50px;
-  left: 30px;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 9999999999;
   display: flex;
-  flex-direction: column;
+  gap:10px;
   justify-content: center;
   align-items: center;
 }

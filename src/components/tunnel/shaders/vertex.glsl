@@ -37,6 +37,7 @@ void main() {
     vAudioSmoothness = AudioSmoothness;
     vAudioIntensity = AudioIntensity;
 
+    
     vec3 deviation = offset * 1.5 * normal * (1.0 + AudioIntensity) * AudioSmoothness;
 
     deviation = clamp(deviation,-1.5,1.5);

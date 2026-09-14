@@ -48,8 +48,7 @@ export const TunnelMaterial = ({
   audioAnalyser,
 }: TunnelMaterialProps) => {
   const { currentColorIndex } = useCar();
-    const { played, setPlayed } = UseAudio();
-  
+  const { played, setPlayed } = UseAudio();
 
   const uniforms = useRef(createUniforms(initialYOffset, depth));
   const CSMRef = useRef<CSM<typeof MeshBasicMaterial>>(null);
@@ -71,6 +70,7 @@ export const TunnelMaterial = ({
     const size = audioAnalyser.frequencyBinCount;
 
     const data = new Uint8Array(size);
+
     const texture = new DataTexture(data, 1, size, RedFormat);
 
     texture.needsUpdate = true;
@@ -78,8 +78,8 @@ export const TunnelMaterial = ({
     dataRef.current = data;
     textureRef.current = texture;
 
-    if (CSMRef.current) {
-      CSMRef.current.uniforms.uAudioTexture = { value: texture };
+    if (CSMRef.current?.uniforms.uAudioTexture) {
+      CSMRef.current.uniforms.uAudioTexture.value = texture;
     }
   }, [audioAnalyser]);
 
@@ -114,9 +114,34 @@ export const TunnelMaterial = ({
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
 
-    if (uniforms.current.uNoiseUvYOffset) {
-      uniforms.current.uNoiseUvYOffset.value = time * 0.03;
+    uniforms.current.uTime.value = time;
+    uniforms.current.uNoiseUvYOffset.value = time * 0.03;
+
+    if (
+      !audioAnalyser ||
+      !dataRef.current ||
+      !textureRef.current ||
+      !CSMRef.current
+    ) {
+      return;
     }
+
+    // Get fresh frequency data every frame
+    audioAnalyser.getByteFrequencyData(dataRef.current);
+
+    // Tell Three.js the texture contents changed
+    textureRef.current.needsUpdate = true;
+
+    // Calculate average
+    let sum = 0;
+
+    for (let i = 0; i < dataRef.current.length; i++) {
+      sum += dataRef.current[i];
+    }
+
+    const average = sum / dataRef.current.length / 255;
+
+    CSMRef.current.uniforms.uAudioAverage.value = average;
   });
 
   useEffect(
@@ -130,23 +155,23 @@ export const TunnelMaterial = ({
   // ⚡ FRAME LOOP (AUDIO UPDATE)
   // -------------------------------
 
-  useOnAudio((frequencyData, average) => {
-    if (
-      !CSMRef.current ||
-      !textureRef.current ||
-      !textureRef.current.image.data
-    )
-      return;
+  // useOnAudio((frequencyData, average) => {
+  //   if (
+  //     !CSMRef.current ||
+  //     !textureRef.current ||
+  //     !textureRef.current.image.data
+  //   )
+  //     return;
 
-    textureRef.current.image.data.set(frequencyData);
-    textureRef.current.needsUpdate = true;
+  //   textureRef.current.image.data.set(frequencyData);
+  //   textureRef.current.needsUpdate = true;
 
-    CSMRef.current.uniforms.uAudioAverage.value = average;
+  //   CSMRef.current.uniforms.uAudioAverage.value = average;
 
-    if (!CSMRef.current.uniforms.uAudioTexture.value) {
-      CSMRef.current.uniforms.uAudioTexture.value = textureRef.current;
-    }
-  });
+  //   if (!CSMRef.current.uniforms.uAudioTexture.value) {
+  //     CSMRef.current.uniforms.uAudioTexture.value = textureRef.current;
+  //   }
+  // });
 
   // Expose uniforms to parent via ref
   useEffect(() => {
